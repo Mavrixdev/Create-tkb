@@ -1,0 +1,97 @@
+{
+  "title": "THỜI GIAN CÁC TIẾT HỌC, NĂM HỌC 2025-2026 ",
+  "morning": [
+    {
+      "time": "7h00 - 7h15",
+      "duration": "15 phút",
+      "content": "Sinh hoạt lớp",
+      "isBreak": false
+    },
+    {
+      "time": "7h15 - 8h00",
+      "duration": "45 phút",
+      "content": "Tiết 1",
+      "isBreak": false
+    },
+    {
+      "time": "8h00 - 8h45",
+      "duration": "45 phút",
+      "content": "Tiết 2",
+      "isBreak": false
+    },
+    {
+      "time": "8h45 - 9h00",
+      "duration": "15 phút",
+      "content": "Ra Chơi",
+      "isBreak": true
+    },
+    {
+      "time": "9h00 - 9h45",
+      "duration": "45 phút",
+      "content": "Tiết 3",
+      "isBreak": false
+    },
+    {
+      "time": "9h45 - 10h30",
+      "duration": "45 phút",
+      "content": "Tiết 4",
+      "isBreak": false
+    },
+    {
+      "time": "10h30 - 10h35",
+      "duration": "5 Phút",
+      "content": "Giải Lao",
+      "isBreak": true
+    },
+    {
+      "time": "10h35 - 11h15",
+      "duration": "45 Phút",
+      "content": "Tiết 5",
+      "isBreak": false
+    }
+  ],
+  "afternoon": [
+    {
+      "time": "13h15- 14h00",
+      "duration": "45 phút",
+      "content": "Tiết 1",
+      "isBreak": false
+    },
+    {
+      "time": "14h00 - 14h45",
+      "duration": "45 phút",
+      "content": "Tiết 2",
+      "isBreak": false
+    },
+    {
+      "time": "14h45 - 15h00",
+      "duration": "15 phút",
+      "content": "Ra Chơi",
+      "isBreak": true
+    },
+    {
+      "time": "15h00- 15h45",
+      "duration": "45 phút",
+      "content": "Tiết 3",
+      "isBreak": false
+    },
+    {
+      "time": "15h45 - 16h30",
+      "duration": "45 phút",
+      "content": "Tiết 4",
+      "isBreak": false
+    },
+    {
+      "time": "16h30 - 16h35",
+      "duration": "5 Phút",
+      "content": "Giải Lao",
+      "isBreak": true
+    },
+    {
+      "time": "16h35 - 17h15",
+      "duration": "45 phút",
+      "content": "Tiết 5",
+      "isBreak": false
+    }
+  ]
+}
