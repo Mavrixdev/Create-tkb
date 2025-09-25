@@ -8,6 +8,14 @@
   ],
   "routes": [
     {
+      "src": "/socket.io/",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate",
+        "connection": "keep-alive"
+      },
+      "dest": "server.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "server.js"
     }
