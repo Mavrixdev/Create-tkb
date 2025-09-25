@@ -6,94 +6,151 @@
     <title>Trang Chủ - Thời Khóa Biểu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        body { font-family: 'Quicksand', sans-serif; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); background-size: 400% 400%; animation: gradientBG 15s ease infinite; padding: 20px; }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .selection-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 40px; }
-        .choice-card { width: 300px; height: 400px; padding: 30px; box-sizing: border-box; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); text-align: center; display: flex; flex-direction: column; justify-content: space-around; align-items: center; transition: transform 0.3s ease, box-shadow 0.3s ease; text-decoration: none; color: #fff; cursor: pointer; }
-        .choice-card:hover { transform: translateY(-10px); box-shadow: 0 16px 40px 0 rgba(31, 38, 135, 0.5); }
-        .choice-card h2 { font-size: 2em; text-shadow: 2px 2px 8px rgba(0,0,0,0.5); margin: 0; }
+        :root {
+            --background-color: #f0f8ff;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body { 
+            font-family: 'Be Vietnam Pro', sans-serif; 
+            color: #fff; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253, 100%, 70%, 0.1) 0px, transparent 50%),
+                radial-gradient(at 99% 1%, hsla(339, 100%, 75%, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(205, 100%, 75%, 0.1) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, hsla(165, 100%, 75%, 0.1) 0px, transparent 50%);
+            transition: background-color 0.5s ease;
+        }
+        .selection-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 40px; 
+            flex-grow: 1;
+            padding: 20px;
+        }
+        .choice-card { 
+            width: 320px; 
+            height: 420px; 
+            padding: 30px; 
+            box-sizing: border-box; 
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-radius: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2); 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-around; 
+            align-items: center; 
+            transition: transform 0.3s ease, box-shadow 0.3s ease; 
+            text-decoration: none; 
+            color: #fff; 
+            cursor: pointer; 
+        }
+        .choice-card:hover { 
+            transform: translateY(-12px); 
+            box-shadow: 0 16px 40px 0 rgba(31, 38, 135, 0.3); 
+        }
+        .choice-card h2 { font-size: 2.2em; text-shadow: 2px 2px 8px rgba(0,0,0,0.3); margin: 0; }
         .choice-card p { font-size: 1.1em; opacity: 0.9; }
-        .choice-card .icon { font-size: 5em; }
-        .card-button { padding: 12px 30px; border: 2px solid rgba(255, 255, 255, 0.7); border-radius: 50px; background: transparent; color: #fff; font-family: 'Quicksand', sans-serif; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s ease; }
+        .choice-card .icon { font-size: 6em; color: rgba(255,255,255,0.9); text-shadow: 0 0 15px rgba(255,255,255,0.5); }
+        .card-button { 
+            padding: 14px 35px; 
+            border: 2px solid rgba(255, 255, 255, 0.7); 
+            border-radius: 50px; 
+            background: transparent; 
+            color: #fff; 
+            font-family: 'Be Vietnam Pro', sans-serif; 
+            font-size: 1.1em; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+        }
         .card-button:hover { background: rgba(255, 255, 255, 0.2); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.4s ease; }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-content { width: 95%; max-width: 1200px; max-height: 90vh; overflow-y: auto; padding: 40px; background: rgba(255, 255, 255, 0.15); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); position: relative; transform: scale(0.9); transition: transform 0.4s ease; }
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(8px); 
+            display: flex;
+            justify-content: center; align-items: center; 
+            z-index: 1000; 
+            opacity: 0; 
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s; 
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { 
+            width: 95%; max-width: 1200px; max-height: 90vh; 
+            overflow-y: auto; padding: 40px; 
+            background: rgba(30, 30, 40, 0.8); 
+            border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); 
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3); 
+            position: relative; 
+            transform: scale(0.95); 
+            transition: transform 0.4s ease; 
+        }
         .modal-overlay.active .modal-content { transform: scale(1); }
-        .close-button { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.3); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 24px; cursor: pointer; transition: background 0.3s, transform 0.3s; }
+        .close-button { 
+            position: absolute; top: 20px; right: 20px; 
+            background: rgba(0,0,0,0.3); border: none; color: #fff; 
+            width: 40px; height: 40px; border-radius: 50%; font-size: 24px; 
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: background 0.3s, transform 0.3s; 
+        }
         .close-button:hover { background: rgba(255,0,0,0.5); transform: rotate(90deg); }
-        .table-responsive-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+        .table-responsive-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 15px; }
         table { width: 100%; min-width: 800px; border-collapse: collapse; border-radius: 15px; overflow: hidden; }
-        th, td { padding: 16px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); white-space: nowrap; transition: background-color 0.3s; /* MỚI: Thêm transition cho mượt */ }
-        
-        /* MỚI: Tiêu đề gradient nổi bật */
-        .main-header-row th {
-            background: linear-gradient(45deg, rgba(35, 166, 213, 0.3), rgba(129, 56, 221, 0.3));
-            font-weight: 700;
-            font-size: 1.1em;
-        }
-        
-        /* MỚI: Màu nền cho các buổi */
-        .schedule-row-morning td { background-color: rgba(35, 166, 213, 0.1); }
-        .schedule-row-afternoon td { background-color: rgba(129, 56, 221, 0.1); }
-        
-        /* MỚI: Hiệu ứng hover mới */
-        .schedule-row-morning:hover td { background-color: rgba(35, 166, 213, 0.25); }
-        .schedule-row-afternoon:hover td { background-color: rgba(129, 56, 221, 0.25); }
-
-        /* MỚI: Style cho cột Buổi/Tiết */
-        td.session-label {
-             background-color: rgba(0, 0, 0, 0.2) !important; /* Dùng !important để ghi đè */
-             font-weight: bold;
-        }
-        /* MỚI: CSS cho dòng credit ở cuối trang */
-        .footer-credit {
-            text-align: center;
-            width: 100%;
-            color: rgba(255, 255, 255, 0.7); /* Màu trắng hơi mờ */
-            font-size: 0.9em;
-            position: absolute; /* Giúp nó luôn ở dưới cùng */
-            bottom: 20px; /* Cách lề dưới 20px */
-            left: 0;
-        }
-
-        .footer-credit a {
-            color: rgba(255, 255, 255, 0.9); /* Màu link sáng hơn một chút */
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-
-        .footer-credit a:hover {
-            color: #fff; /* Sáng lên khi di chuột */
-            text-decoration: underline;
-        }
-
-        .history-select { text-align: center; margin: 25px 0; }
-        select { padding: 12px 15px; font-size: 1em; border-radius: 10px; cursor: pointer; background: rgba(255, 255, 255, 0.2); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); }
-        select option { background: #333; }
-        .no-schedule { text-align: center; font-size: 1.2em; padding: 20px; background: rgba(0,0,0,0.2); border-radius: 10px; }
-        .modal-content h3 { font-size: 1.8em; text-align: center; margin-top: 20px; margin-bottom: 15px;}
+        th, td { padding: 16px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); white-space: nowrap; }
+        .main-header-row th { background: rgba(255, 255, 255, 0.2); font-weight: 700; font-size: 1.1em; }
+        tr:not(.main-header-row):hover td { background-color: rgba(255, 255, 255, 0.1); }
+        td.session-label { background-color: rgba(0, 0, 0, 0.3) !important; font-weight: bold; }
+        #schedule-info { text-align: center; margin: 20px 0; font-size: 1.1em; opacity: 0.8;}
+        .no-schedule { text-align: center; font-size: 1.2em; padding: 40px 20px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .modal-content h1, .modal-content h3 { text-align: center; }
+        .modal-content h1 { font-size: 2em; } .modal-content h3 { font-size: 1.6em; margin-top: 30px; }
         .times-table { min-width: 0; margin-bottom: 30px; }
         .times-table th, .times-table td { padding: 15px; white-space: normal; }
-        .times-table .break-row { background: rgba(0,0,0,0.2); font-style: italic; }
-        @media (max-width: 768px) { .modal-content { padding: 20px; } .close-button { top: 10px; right: 10px; width: 35px; height: 35px; } th, td { padding: 12px; font-size: 0.9em; } .times-table th, .times-table td { font-size: 0.9em; } }
+        .times-table .break-row { background: rgba(0,0,0,0.2); font-style: italic; color: #a0a0a0; }
+        .footer-credit {
+            text-align: center; width: 100%; color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em; padding: 20px 0; flex-shrink: 0;
+        }
+        .footer-credit a { color: rgba(255, 255, 255, 0.9); text-decoration: none; font-weight: bold; transition: color 0.3s; }
+        .footer-credit a:hover { color: #fff; text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .modal-content { padding: 20px; } 
+            .close-button { top: 10px; right: 10px; width: 35px; height: 35px; } 
+            th, td { padding: 12px; font-size: 0.9em; } 
+            .times-table th, .times-table td { font-size: 0.9em; }
+        }
     </style>
 </head>
 <body>
     
     <div class="selection-container">
         <div class="choice-card" id="view-schedule-card">
-            <div class="icon">🗓️</div>
+            <div class="icon"><i class="ph-fill ph-calendar-check"></i></div>
             <h2>Xem Thời Khóa Biểu</h2>
             <p>Xem lịch học chi tiết các ngày trong tuần.</p>
             <button class="card-button">Mở Lịch</button>
         </div>
         
         <div class="choice-card" id="view-times-card">
-            <div class="icon">⏰</div>
+            <div class="icon"><i class="ph-fill ph-clock"></i></div>
             <h2>Thời Gian Tiết Học</h2>
             <p>Xem chi tiết thời gian vào lớp, ra chơi và tan học.</p>
             <button class="card-button">Xem Chi Tiết</button>
@@ -104,11 +161,8 @@
         <div class="modal-content">
             <button class="close-button" id="close-schedule-modal-btn">&times;</button>
             <h1>Thời Khóa Biểu</h1>
-            <div class="history-select" id="history-select">
-                <label for="history-dropdown">Chọn phiên bản:</label>
-                <select id="history-dropdown" onchange="renderSchedule()"></select>
-            </div>
-            <div id="no-schedule-msg" class="no-schedule" style="display: none;">Chưa có TKB.</div>
+            <div id="schedule-info"></div>
+            <div id="no-schedule-msg" class="no-schedule" style="display: none;">Chưa có TKB nào được cập nhật.</div>
             <div class="table-responsive-wrapper">
                 <table id="schedule-table" style="display: none;">
                     <thead id="schedule-thead"></thead>
@@ -120,167 +174,145 @@
     
     <div class="modal-overlay" id="times-modal">
         <div class="modal-content" id="times-modal-content">
-            <button class="close-button" id="close-times-modal-btn">&times;</button>
-        </div>
+            </div>
     </div>
-    <p class="footer-credit">
+
+    <footer class="footer-credit">
         Made with ❤️ by <a href="https://github.com/mavrixdev" target="_blank">Mavrixdev</a>
-    </p>
+    </footer>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let history = [];
-        let isFirstRender = true; 
 
-        const scheduleModal = document.getElementById('schedule-modal');
-        const viewScheduleCard = document.getElementById('view-schedule-card');
-        const closeScheduleModalBtn = document.getElementById('close-schedule-modal-btn');
-        function openScheduleModal() { scheduleModal.classList.add('active'); if (isFirstRender && history.length > 0) { renderSchedule(); isFirstRender = false; } }
-        function closeScheduleModal() { scheduleModal.classList.remove('active'); }
-        viewScheduleCard.addEventListener('click', openScheduleModal);
-        closeScheduleModalBtn.addEventListener('click', closeScheduleModal);
-        scheduleModal.addEventListener('click', (e) => { if (e.target === scheduleModal) closeScheduleModal(); });
+        // --- CÁC HÀM TIỆN ÍCH ---
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
         
-        const timesModal = document.getElementById('times-modal');
-        const viewTimesCard = document.getElementById('view-times-card');
-        const closeTimesModalBtn = document.getElementById('close-times-modal-btn');
-        function openTimesModal() { timesModal.classList.add('active'); }
-        function closeTimesModal() { timesModal.classList.remove('active'); }
-        viewTimesCard.addEventListener('click', openTimesModal);
-        closeTimesModalBtn.addEventListener('click', closeTimesModal);
-        timesModal.addEventListener('click', (e) => { if (e.target === timesModal) closeTimesModal(); });
-
-        socket.on('updateTimes', (timesData) => {
-            const contentDiv = document.getElementById('times-modal-content');
-            let html = `
-                <button class="close-button" onclick="closeTimesModal()">&times;</button>
-                <h1>THỜI GIAN CÁC TIẾT HỌC</h1>
-                <p style="text-align: center; font-size: 1.2em;">${timesData.title || ''}</p>
-                <h3>Buổi Sáng</h3>
-                <table class="times-table"><thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th></tr></thead><tbody>`;
-            timesData.morning.forEach(row => {
-                html += `<tr class="${row.isBreak ? 'break-row' : ''}"><td>${row.time}</td><td>${row.duration}</td><td>${row.content}</td></tr>`;
-            });
-            html += `</tbody></table><h3>Buổi Chiều</h3><table class="times-table"><thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th></tr></thead><tbody>`;
-            timesData.afternoon.forEach(row => {
-                html += `<tr class="${row.isBreak ? 'break-row' : ''}"><td>${row.time}</td><td>${row.duration}</td><td>${row.content}</td></tr>`;
-            });
-            html += `</tbody></table>`;
-            contentDiv.innerHTML = html;
+        // --- LOGIC MỞ/ĐÓNG MODAL ---
+        document.getElementById('view-schedule-card').addEventListener('click', () => openModal('schedule-modal'));
+        document.getElementById('close-schedule-modal-btn').addEventListener('click', () => closeModal('schedule-modal'));
+        document.getElementById('schedule-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'schedule-modal') closeModal('schedule-modal');
         });
 
-        // =================================================================
-        // DÁN ĐOẠN CODE NÀY VÀO ĐỂ THAY THẾ HÀM CŨ
-        // =================================================================
+        document.getElementById('view-times-card').addEventListener('click', () => openModal('times-modal'));
+        document.getElementById('times-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'times-modal') closeModal('times-modal');
+        });
+
+        // --- CÁC HÀM RENDER DỮ LIỆU ---
+        
         function getColorForSubject(subject) {
-            // MỚI: Hàm trợ giúp chuyển đổi màu HEX sang RGBA để có độ trong suốt
             function hexToRgba(hex, alpha) {
-                // Bỏ dấu # nếu có
                 hex = hex.replace('#', '');
-                
-                // Chuyển đổi rr, gg, bb sang giá trị số
                 const r = parseInt(hex.substring(0, 2), 16);
                 const g = parseInt(hex.substring(2, 4), 16);
                 const b = parseInt(hex.substring(4, 6), 16);
-
                 return `rgba(${r}, ${g}, ${b}, ${alpha})`;
             }
 
-            // 1. Bảng màu PASTEL mới
             const subjectColors = {
-                // Nhóm Khoa học Tự nhiên
-                'toán': '#A9CCE3',
-                'vật lý': '#FAD7A0',
-                'hóa học': '#A3E4D7',
-                'sinh học': '#A9DFBF',
-                'công nghệ': '#D5D8DC',
-                
-                // Nhóm Khoa học Xã hội
-                'văn': '#D7BDE2',
-                'văn cđ': '#D7BDE2',
-                'lịch sử': '#D0A98F',
-                'sử cđ': '#D0A98F',
-                'địa cđ': '#A2D9CE',
-                'địa lý': '#A2D9CE',
-                'giáo dục công dân': '#D2B4DE',
-                'hđtn': '#D2B4DE',
-
-                // Nhóm Năng khiếu & Ngoại ngữ
-                'tiếng anh': '#AEB6BF',
-                'thể dục': '#F5CBA7',
-                
-                // Hoạt động khác
-                'chào cờ': '#F5B7B1',
-                'shl': '#E5E7E9',
+                'toán': '#89cff0', 'vật lý': '#f3a683', 'hóa học': '#a8e6cf', 
+                'sinh học': '#9bcfb5', 'công nghệ': '#dcdde1', 'văn': '#f8c291', 
+                'văn cđ': '#f8c291', 'lịch sử': '#e5b4b4', 'sử cđ': '#e5b4b4', 
+                'địa lý': '#b2d8b2', 'địa cđ': '#b2d8b2', 'giáo dục công dân': '#cfb4e5', 
+                'hđtn': '#cfb4e5', 'tiếng anh': '#c7d3e1', 'thể dục': '#f1cb7d', 
+                'chào cờ': '#ffb6c1', 'shl': '#f5f5dc',
             };
 
             const lowerCaseSubject = subject.toLowerCase().trim();
-
-            // Nếu ô trống, trả về màu nền mặc định rất nhạt
-            if (!lowerCaseSubject) {
-                return 'rgba(255, 255, 255, 0.05)';
-            }
-
-            // 3. Tìm màu trong danh sách. Nếu có, chuyển sang RGBA với độ trong suốt 50%
+            if (!lowerCaseSubject) return 'rgba(255, 255, 255, 0.05)';
             if (subjectColors[lowerCaseSubject]) {
-                // Bạn có thể thay đổi số 0.5 để tăng/giảm độ đậm nhạt (từ 0.0 đến 1.0)
-                return hexToRgba(subjectColors[lowerCaseSubject], 0.6);
+                return hexToRgba(subjectColors[lowerCaseSubject], 0.4);
             }
-
-            // 4. Nếu không tìm thấy, trả về một màu nền mặc định khác
             return 'rgba(255, 255, 255, 0.1)';
         }
-        // =================================================================
 
-        function renderSchedule() { 
-            if (history.length === 0) return; 
-            const selectedIndex = document.getElementById('history-dropdown').value; 
-            const schedule = history[selectedIndex].schedule; 
+        function renderSchedule(scheduleEntry) { 
+            const noMsg = document.getElementById('no-schedule-msg');
+            const table = document.getElementById('schedule-table');
+            const infoDiv = document.getElementById('schedule-info');
+
+            if (!scheduleEntry || !scheduleEntry.schedule) {
+                noMsg.style.display = 'block';
+                table.style.display = 'none';
+                infoDiv.style.display = 'none';
+                return;
+            }
+
+            noMsg.style.display = 'none';
+            table.style.display = 'table';
+            infoDiv.style.display = 'block';
+
+            const { schedule, timestamp } = scheduleEntry;
+            const date = new Date(timestamp).toLocaleString('vi-VN');
+            infoDiv.innerHTML = `Bản cập nhật mới nhất lúc: <strong>${date}</strong>`;
+            
             const numPeriodsPerSession = 5; 
             const thead = document.getElementById('schedule-thead'); 
             const tbody = document.getElementById('schedule-tbody'); 
             thead.innerHTML = ''; 
             tbody.innerHTML = ''; 
-            document.getElementById('schedule-table').style.display = 'table'; 
             
-            // MỚI: Thêm class cho dòng tiêu đề
             const headerRow = document.createElement('tr');
             headerRow.className = 'main-header-row';
             headerRow.innerHTML = '<th>Buổi / Tiết</th>'; 
             schedule.forEach(item => { headerRow.innerHTML += `<th>${item.day}</th>`; }); 
             thead.appendChild(headerRow); 
 
-            // MỚI: Thêm class cho các dòng của buổi sáng/chiều
-            for (let i = 0; i < numPeriodsPerSession; i++) { 
-                const row = document.createElement('tr'); 
-                row.className = 'schedule-row-morning'; // Thêm class buổi sáng
-                const periodNum = i + 1; 
-                row.innerHTML = `<td class="session-label">${periodNum} (Sáng)</td>`; 
+            for (let i = 0; i < numPeriodsPerSession * 2; i++) {
+                const isMorning = i < numPeriodsPerSession;
+                const periodNum = isMorning ? i + 1 : i - numPeriodsPerSession + 1;
+                const sessionLabel = isMorning ? 'Sáng' : 'Chiều';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `<td class="session-label">${periodNum} (${sessionLabel})</td>`; 
                 schedule.forEach(day => { 
                     const period = day.periods[i] || ''; 
-                    const color = getColorForSubject(period); // Giờ color sẽ là transparent
-                    row.innerHTML += `<td class="subject-cell" style="background-color: ${color};">${period}</td>`; 
+                    const color = getColorForSubject(period);
+                    row.innerHTML += `<td style="background-color: ${color};">${period}</td>`; 
                 }); 
-                tbody.appendChild(row); 
-            } 
-            for (let i = 0; i < numPeriodsPerSession; i++) { 
-                const row = document.createElement('tr'); 
-                row.className = 'schedule-row-afternoon'; // Thêm class buổi chiều
-                const periodNum = i + 1; 
-                const afternoonIndex = numPeriodsPerSession + i; 
-                row.innerHTML = `<td class="session-label">${periodNum} (Chiều)</td>`; 
-                schedule.forEach(day => { 
-                    const period = day.periods[afternoonIndex] || ''; 
-                    const color = getColorForSubject(period); 
-                    row.innerHTML += `<td class="subject-cell" style="background-color: ${color};">${period}</td>`; 
-                }); 
-                tbody.appendChild(row); 
-            } 
+                tbody.appendChild(row);
+            }
         }
-        function populateDropdown() { const dropdown = document.getElementById('history-dropdown'); const selectDiv = document.getElementById('history-select'); const tableWrapper = document.querySelector('.table-responsive-wrapper'); const noMsg = document.getElementById('no-schedule-msg'); dropdown.innerHTML = ''; if (history.length === 0) { selectDiv.style.display = 'none'; tableWrapper.style.display = 'none'; noMsg.style.display = 'block'; } else { selectDiv.style.display = 'block'; tableWrapper.style.display = 'block'; noMsg.style.display = 'none'; history.forEach((entry, index) => { const date = new Date(entry.timestamp).toLocaleString('vi-VN'); const option = document.createElement('option'); option.value = index; option.textContent = `Bản cập nhật lúc: ${date}`; dropdown.appendChild(option); }); dropdown.value = history.length - 1; } }
-        socket.on('updateHistory', (newHistory) => { history = newHistory; populateDropdown(); });
-        socket.on('updateSettings', (newSettings) => { document.title = (newSettings.pageTitle || 'Trang Chủ') + ' - TKB'; });
+
+        function renderTimes(timesData) {
+            const contentDiv = document.getElementById('times-modal-content');
+            let html = `
+                <button class="close-button" onclick="closeModal('times-modal')">&times;</button>
+                <h1>THỜI GIAN CÁC TIẾT HỌC</h1>
+                <p style="text-align: center; font-size: 1.2em;">${timesData.title || ''}</p>
+                <h3>Buổi Sáng</h3>
+                <table class="times-table"><thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th></tr></thead><tbody>`;
+            (timesData.morning || []).forEach(row => {
+                html += `<tr class="${row.isBreak ? 'break-row' : ''}"><td>${row.time}</td><td>${row.duration}</td><td>${row.content}</td></tr>`;
+            });
+            html += `</tbody></table><h3>Buổi Chiều</h3><table class="times-table"><thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th></tr></thead><tbody>`;
+            (timesData.afternoon || []).forEach(row => {
+                html += `<tr class="${row.isBreak ? 'break-row' : ''}"><td>${row.time}</td><td>${row.duration}</td><td>${row.content}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            contentDiv.innerHTML = html;
+        }
+
+        // --- LẮNG NGHE SỰ KIỆN TỪ SERVER ---
+        socket.on('latestSchedule', (scheduleEntry) => {
+            renderSchedule(scheduleEntry);
+        });
+
+        socket.on('updateTimes', (timesData) => {
+            renderTimes(timesData);
+        });
+
+        socket.on('updateSettings', (newSettings) => { 
+            document.title = (newSettings.pageTitle || 'Trang Chủ') + ' - TKB'; 
+            document.documentElement.style.setProperty('--background-color', newSettings.backgroundColor || '#f0f8ff');
+        });
     </script>
 </body>
 </html>
