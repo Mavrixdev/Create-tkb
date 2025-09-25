@@ -6,44 +6,40 @@
     <title>Admin Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        body { font-family: 'Quicksand', sans-serif; color: #e0e0e0; margin: 0; padding: 25px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; background: linear-gradient(-45deg, #121828, #1a233a, #3a4a6b, #1e2840); background-size: 400% 400%; animation: gradientBG 20s ease infinite; overflow-y: auto; }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .container { width: 100%; max-width: 1400px; background: rgba(20, 26, 44, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); padding: 40px; }
+        body { font-family: 'Be Vietnam Pro', sans-serif; color: #e0e0e0; margin: 0; padding: 25px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; background: #121828; overflow-y: auto; }
+        .container { width: 100%; max-width: 1400px; padding: 10px;}
         h1, h2 { text-align: center; color: #ffffff; font-weight: 700; text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); }
         h1 { font-size: 2.8em; margin-bottom: 30px; }
         h2 { font-size: 2em; margin-top: 50px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;}
+        .card { background: rgba(20, 26, 44, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); padding: 30px; margin-bottom: 30px;}
         table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 15px; overflow: hidden; }
         th, td { border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px; text-align: center; }
         th { background: rgba(255, 255, 255, 0.15); padding: 15px; font-size: 1.1em; }
-        input[type="text"], input[type="password"], select { width: 100%; background-color: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 12px; box-sizing: border-box; color: #fff; font-family: 'Quicksand', sans-serif; font-size: 1em; transition: all 0.3s ease; }
-        input[type="text"]:focus, input[type="password"]:focus, select:focus { outline: none; border-color: rgba(59, 130, 246, 0.7); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); background-color: rgba(0, 0, 0, 0.5); }
+        input[type="text"], input[type="password"], select { width: 100%; background-color: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 12px; box-sizing: border-box; color: #fff; font-family: 'Be Vietnam Pro', sans-serif; font-size: 1em; transition: all 0.3s ease; }
+        input[type="text"]:focus, input[type="password"]:focus, select:focus { outline: none; border-color: #A5B4FC; box-shadow: 0 0 15px rgba(165, 180, 252, 0.3); background-color: rgba(0, 0, 0, 0.5); }
         select option { background: #1e2840; }
-        button { display: block; width: 100%; padding: 15px; background: linear-gradient(90deg, #3B82F6, #6D28D9); color: white; border: none; border-radius: 50px; cursor: pointer; margin-top: 25px; font-size: 1.1em; font-weight: 700; letter-spacing: 1px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        button { display: block; width: 100%; padding: 15px; background: linear-gradient(90deg, #4F46E5, #7C3AED); color: white; border: none; border-radius: 50px; cursor: pointer; margin-top: 25px; font-size: 1.1em; font-weight: 700; letter-spacing: 1px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4); }
         .view-link { text-align: center; margin-top: 30px; } .view-link a { color: #A5B4FC; text-decoration: none; font-weight: 500; font-size: 1.1em; transition: color 0.3s; } .view-link a:hover { color: #fff; }
-        .settings-card { background: rgba(20, 26, 44, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px; margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; align-items: center; }
-        .settings-card .form-group { display: flex; flex-direction: column; } .settings-card label { margin-bottom: 8px; font-weight: 500; }
-        .settings-card .color-picker-group { display: flex; align-items: center; gap: 15px; }
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; align-items: flex-start; }
+        .form-group { display: flex; flex-direction: column; } .form-group label { margin-bottom: 8px; font-weight: 500; }
+        .color-picker-group { display: flex; align-items: center; gap: 15px; }
         input[type="color"] { -webkit-appearance: none; width: 50px; height: 50px; border: none; border-radius: 50%; cursor: pointer; background-color: transparent; } input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; } input[type="color"]::-webkit-color-swatch { border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.5); }
-        .times-editor-card { background: rgba(20, 26, 44, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px; margin-top: 20px; }
-        .times-editor-card h3 { display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 1.5em; margin-top: 0; }
         .times-tables-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .times-editor-card table { margin-top: 10px; } .times-editor-card th { font-size: 1em; padding: 10px; } .times-editor-card td { padding: 5px; }
-        .times-editor-card input[type="text"] { font-size: 0.9em; padding: 10px; }
-        .times-editor-card .form-group { margin-bottom: 20px; }
-
-        /* MỚI: CSS cho các nút Thêm/Xóa */
+        .times-editor-card h3 { display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 1.5em; margin-top: 0; }
         .action-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; border-radius: 50%; width: 30px; height: 30px; font-size: 1.2em; cursor: pointer; transition: background-color 0.3s, transform 0.3s; padding: 0; margin: 0; line-height: 30px; }
         .action-btn:hover { transform: scale(1.1); }
-        .add-btn { background-color: rgba(74, 222, 128, 0.2); }
-        .add-btn:hover { background-color: rgba(74, 222, 128, 0.5); }
-        .delete-btn { background-color: rgba(239, 68, 68, 0.2); }
-        .delete-btn:hover { background-color: rgba(239, 68, 68, 0.5); }
-
-        #auth-error, .no-schedule { text-align: center; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        #auth-error { background-color: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #FCA5A5; display: none; }
+        .add-btn { background-color: rgba(74, 222, 128, 0.2); } .add-btn:hover { background-color: rgba(74, 222, 128, 0.5); }
+        .delete-btn { background-color: rgba(239, 68, 68, 0.2); } .delete-btn:hover { background-color: rgba(239, 68, 68, 0.5); }
+        #login-section { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
+        .login-card { width: 100%; max-width: 400px; text-align: center; }
+        .login-card h1 { font-size: 2.2em; }
+        .login-card input { margin-bottom: 15px; }
+        .login-card button { width: auto; padding: 12px 40px; margin: 15px auto 0; }
+        #auth-error { text-align: center; padding: 15px; border-radius: 8px; margin-top: 20px; background-color: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #FCA5A5; display: none; }
         #admin-content { display: none; }
         #toast-notification { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(16, 185, 129, 0.8); backdrop-filter: blur(10px); color: white; padding: 15px 30px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 1000; opacity: 0; transition: transform 0.5s ease, opacity 0.5s ease; font-weight: 500; }
         #toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -52,29 +48,37 @@
 </head>
 <body>
     <div class="container">
-        <h1>Admin Dashboard</h1>
-        <div id="auth-error">Lỗi xác thực. Vui lòng tải lại trang.</div>
+        <div id="login-section">
+            <div class="login-card card">
+                <h1><i class="ph-fill ph-lock"></i> Admin Login</h1>
+                <input type="password" id="password-input" placeholder="Nhập mật khẩu Admin...">
+                <button onclick="attemptLogin()">Đăng Nhập</button>
+                <div id="auth-error">Mật khẩu không đúng. Vui lòng thử lại.</div>
+            </div>
+        </div>
         <div id="admin-content">
-            <h2>Chỉnh Sửa Thời Khóa Biểu</h2>
-            <div id="history-select" style="display: none;"><label for="history-dropdown">Xem phiên bản cũ:</label><select id="history-dropdown" onchange="renderAdmin()"></select></div>
-            <table id="admin-table"><thead id="admin-thead"></thead><tbody id="admin-tbody"></tbody></table>
-            <button onclick="saveSchedule()">Lưu Thay Đổi Thời Khóa Biểu</button>
-
-            <h2>Chỉnh Sửa Thời Gian Tiết Học</h2>
-            <div class="times-editor-card">
+            <h1><i class="ph-fill ph-gauge"></i> Admin Dashboard</h1>
+            <div class="card">
+                <h2>Chỉnh Sửa Thời Khóa Biểu</h2>
+                <div id="history-select" style="display: none;"><label for="history-dropdown">Xem phiên bản cũ:</label><select id="history-dropdown" onchange="renderAdmin()"></select></div>
+                <table id="admin-table"><thead id="admin-thead"></thead><tbody id="admin-tbody"></tbody></table>
+                <button onclick="saveSchedule()">Lưu Thay Đổi Thời Khóa Biểu</button>
+            </div>
+            <div class="card">
+                <h2>Chỉnh Sửa Thời Gian Tiết Học</h2>
                 <div class="form-group">
                     <label for="times-title">Tiêu đề (VD: Năm học 2025-2026)</label>
                     <input type="text" id="times-title" placeholder="Nhập tiêu đề">
                 </div>
                 <div class="times-tables-container">
-                    <div class="time-table-wrapper">
+                    <div>
                         <h3>Buổi Sáng <button class="action-btn add-btn" onclick="addRow('morning-times-tbody')">+</button></h3>
                         <table id="morning-times-table">
                             <thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th><th>Giải lao?</th><th>Xóa</th></tr></thead>
                             <tbody id="morning-times-tbody"></tbody>
                         </table>
                     </div>
-                    <div class="time-table-wrapper">
+                    <div>
                         <h3>Buổi Chiều <button class="action-btn add-btn" onclick="addRow('afternoon-times-tbody')">+</button></h3>
                         <table id="afternoon-times-table">
                              <thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th><th>Giải lao?</th><th>Xóa</th></tr></thead>
@@ -84,112 +88,213 @@
                 </div>
                  <button onclick="saveTimes()">Lưu Thay Đổi Thời Gian</button>
             </div>
-
-            <h2>Bảng Điều Khiển</h2>
-            <div class="settings-card">
-                <div class="form-group"><label for="new-password">Đổi Mật Khẩu Admin:</label><input type="password" id="new-password" placeholder="Để trống nếu không đổi"></div>
-                <div class="form-group"><label for="page-title">Đổi Tên Trang:</label><input type="text" id="page-title" placeholder="Tên mới cho TKB"></div>
-                <div class="form-group"><label>Đổi Màu Nền (Trang Người Dùng):</label><div class="color-picker-group"><input type="color" id="background-color" value="#f0f8ff"><span>Chọn màu nền mới</span></div></div>
+            <div class="card">
+                <h2>Bảng Điều Khiển</h2>
+                <div class="settings-grid">
+                    <div class="form-group"><label for="new-password">Đổi Mật Khẩu Admin:</label><input type="password" id="new-password" placeholder="Để trống nếu không đổi"></div>
+                    <div class="form-group"><label for="page-title">Đổi Tên Trang:</label><input type="text" id="page-title" placeholder="Tên mới cho TKB"></div>
+                    <div class="form-group"><label>Đổi Màu Nền:</label><div class="color-picker-group"><input type="color" id="background-color" value="#f0f8ff"><span>Chọn màu</span></div></div>
+                </div>
+                <button onclick="saveSettings()">Lưu Cài Đặt</button>
             </div>
-            <button onclick="saveSettings()">Lưu Cài Đặt</button>
+            <div class="view-link"><a href="/">Quay Về Trang Xem <i class="ph ph-arrow-right"></i></a></div>
         </div>
-        <div class="view-link"><a href="/">Quay Về Trang Xem ➔</a></div>
     </div>
     <div id="toast-notification"></div>
-
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        let socket; let history = []; let currentSchedule = [];
-        function showToast(message) { const toast = document.getElementById('toast-notification'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => { toast.classList.remove('show'); }, 3000); }
-        const password = prompt('Nhập mật khẩu Admin:');
-        socket = io('/admin', { auth: { password: password } });
-        socket.on('connect_error', (err) => { document.getElementById('auth-error').style.display = 'block'; document.getElementById('admin-content').style.display = 'none'; });
-        socket.on('connect', () => { document.getElementById('admin-content').style.display = 'block'; });
+        let socket;
+        let history = [];
+        let currentSchedule = [];
+        
+        const loginSection = document.getElementById('login-section');
+        const adminContent = document.getElementById('admin-content');
+        const passwordInput = document.getElementById('password-input');
+        const authError = document.getElementById('auth-error');
 
-        /* MỚI: Các hàm Thêm/Xóa dòng cho bảng thời gian */
+        function saveSettings() {
+            const newSettings = {};
+            const newPassword = document.getElementById('new-password').value;
+            if (newPassword) {
+                newSettings.adminPassword = newPassword;
+            }
+            const pageTitle = document.getElementById('page-title').value;
+            if (pageTitle) {
+                newSettings.pageTitle = pageTitle;
+            }
+            newSettings.backgroundColor = document.getElementById('background-color').value;
+
+            if (Object.keys(newSettings).length > 0) {
+                socket.emit('saveSettings', newSettings);
+                showToast('Đã lưu cài đặt!');
+                document.getElementById('new-password').value = '';
+                if(pageTitle) document.getElementById('page-title').value = '';
+            } else {
+                showToast('Không có thay đổi nào để lưu.');
+            }
+        }
+
+        function attemptLogin() {
+            if (!passwordInput.value) return;
+            if (socket) socket.disconnect();
+            socket = io('/admin', { auth: { password: passwordInput.value } });
+            socket.on('connect_error', (err) => {
+                authError.style.display = 'block';
+                socket.disconnect();
+            });
+            socket.on('authSuccess', () => {
+                loginSection.style.display = 'none';
+                adminContent.style.display = 'block';
+                initializeAdminPanel();
+            });
+        }
+
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') attemptLogin();
+        });
+
+        function initializeAdminPanel() {
+            socket.on('updateHistory', (newHistory) => {
+                history = newHistory;
+                updateDropdown();
+            });
+            socket.on('updateSettings', (newSettings) => {
+                document.title = (newSettings.pageTitle || 'Admin') + ' - Dashboard';
+                document.getElementById('page-title').placeholder = `Tên hiện tại: ${newSettings.pageTitle || 'Chưa đặt'}`;
+                document.getElementById('background-color').value = newSettings.backgroundColor || '#f0f8ff';
+            });
+            socket.on('updateTimes', (timesData) => {
+                renderTimesEditor(timesData);
+            });
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast-notification');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
         function addRow(tbodyId) {
             const tbody = document.getElementById(tbodyId);
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><input type="text" value=""></td>
-                <td><input type="text" value=""></td>
-                <td><input type="text" value=""></td>
-                <td><input type="checkbox"></td>
-                <td><button class="action-btn delete-btn" onclick="deleteRow(this)">🗑️</button></td>
-            `;
+            tr.innerHTML = `<td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="checkbox"></td><td><button class="action-btn delete-btn" onclick="deleteRow(this)">🗑️</button></td>`;
             tbody.appendChild(tr);
         }
 
         function deleteRow(btn) {
-            const row = btn.parentNode.parentNode;
-            row.remove();
+            btn.parentNode.parentNode.remove();
         }
 
         function renderTimesEditor(timesData) {
             if (!timesData) return;
             document.getElementById('times-title').value = timesData.title || '';
-            const morningTbody = document.getElementById('morning-times-tbody');
-            const afternoonTbody = document.getElementById('afternoon-times-tbody');
-            morningTbody.innerHTML = '';
-            afternoonTbody.innerHTML = '';
-            
-            // MỚI: Cập nhật vòng lặp để thêm nút xóa
-            timesData.morning.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><input type="text" value="${row.time}"></td>
-                    <td><input type="text" value="${row.duration}"></td>
-                    <td><input type="text" value="${row.content}"></td>
-                    <td><input type="checkbox" ${row.isBreak ? 'checked' : ''}></td>
-                    <td><button class="action-btn delete-btn" onclick="deleteRow(this)">🗑️</button></td>
-                `;
-                morningTbody.appendChild(tr);
-            });
-            timesData.afternoon.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><input type="text" value="${row.time}"></td>
-                    <td><input type="text" value="${row.duration}"></td>
-                    <td><input type="text" value="${row.content}"></td>
-                    <td><input type="checkbox" ${row.isBreak ? 'checked' : ''}></td>
-                    <td><button class="action-btn delete-btn" onclick="deleteRow(this)">🗑️</button></td>
-                `;
-                afternoonTbody.appendChild(tr);
-            });
+            const renderBody = (tbodyId, data) => {
+                const tbody = document.getElementById(tbodyId);
+                tbody.innerHTML = '';
+                (data || []).forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><input type="text" value="${row.time || ''}"></td>
+                        <td><input type="text" value="${row.duration || ''}"></td>
+                        <td><input type="text" value="${row.content || ''}"></td>
+                        <td><input type="checkbox" ${row.isBreak ? 'checked' : ''}></td>
+                        <td><button class="action-btn delete-btn" onclick="deleteRow(this)">🗑️</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            };
+            renderBody('morning-times-tbody', timesData.morning);
+            renderBody('afternoon-times-tbody', timesData.afternoon);
         }
-        
-        // Hàm saveTimes giữ nguyên, nó đã đủ thông minh để đọc tất cả các dòng hiện có
+
         function saveTimes() {
+            const getDataFromTable = (tbodyId) => {
+                const data = [];
+                document.querySelectorAll(`#${tbodyId} tr`).forEach(tr => {
+                    const inputs = tr.querySelectorAll('input');
+                    data.push({
+                        time: inputs[0].value,
+                        duration: inputs[1].value,
+                        content: inputs[2].value,
+                        isBreak: inputs[3].checked
+                    });
+                });
+                return data;
+            };
             const newTimesData = {
                 title: document.getElementById('times-title').value,
-                morning: [],
-                afternoon: []
+                morning: getDataFromTable('morning-times-tbody'),
+                afternoon: getDataFromTable('afternoon-times-tbody')
             };
-            document.querySelectorAll('#morning-times-table tbody tr').forEach(tr => {
-                const inputs = tr.querySelectorAll('input');
-                newTimesData.morning.push({
-                    time: inputs[0].value, duration: inputs[1].value, content: inputs[2].value, isBreak: inputs[3].checked
-                });
-            });
-            document.querySelectorAll('#afternoon-times-table tbody tr').forEach(tr => {
-                const inputs = tr.querySelectorAll('input');
-                newTimesData.afternoon.push({
-                    time: inputs[0].value, duration: inputs[1].value, content: inputs[2].value, isBreak: inputs[3].checked
-                });
-            });
             socket.emit('saveTimes', newTimesData);
             showToast('Đã lưu thay đổi thời gian!');
         }
-        socket.on('updateTimes', (timesData) => renderTimesEditor(timesData));
-        
-        // --- Các hàm cho TKB và Cài đặt (giữ nguyên code cũ) ---
-        const templateSchedule = [ { day: 'Thứ 2', periods: Array(10).fill('') }, { day: 'Thứ 3', periods: Array(10).fill('') }, { day: 'Thứ 4', periods: Array(10).fill('') }, { day: 'Thứ 5', periods: Array(10).fill('') }, { day: 'Thứ 6', periods: Array(10).fill('') }, { day: 'Thứ 7', periods: Array(10).fill('') } ];
-        function renderAdmin() { if (history.length === 0) { currentSchedule = JSON.parse(JSON.stringify(templateSchedule)); } else { const selectedIndex = document.getElementById('history-dropdown').value; currentSchedule = JSON.parse(JSON.stringify(history[selectedIndex].schedule)); currentSchedule.forEach(item => { while (item.periods.length < 10) item.periods.push(''); }); } const thead = document.getElementById('admin-thead'); thead.innerHTML = ` <tr class="session-header"> <th rowspan="2">Thứ</th> <th colspan="5">Buổi Sáng</th> <th colspan="5">Buổi Chiều</th> </tr> <tr> ${Array.from({length: 10}, (_, i) => `<th>Tiết ${i+1}</th>`).join('')} </tr> `; const tbody = document.getElementById('admin-tbody'); tbody.innerHTML = ''; currentSchedule.forEach((item, rowIndex) => { const row = document.createElement('tr'); let cellsHTML = `<td>${item.day}</td>`; item.periods.forEach((period, colIndex) => { cellsHTML += `<td><input type="text" value="${period}" data-row="${rowIndex}" data-col="${colIndex}"></td>`; }); row.innerHTML = cellsHTML; tbody.appendChild(row); }); }
-        function saveSchedule() { const inputs = document.querySelectorAll('#admin-table input'); inputs.forEach(input => { const row = input.dataset.row; const col = input.dataset.col; currentSchedule[row].periods[col] = input.value; }); socket.emit('saveSchedule', currentSchedule); showToast('Đã lưu TKB và tạo phiên bản mới!'); }
-        function saveSettings() { const newSettings = {}; const newPassword = document.getElementById('new-password').value; if (newPassword) newSettings.adminPassword = newPassword; const pageTitle = document.getElementById('page-title').value; if (pageTitle) newSettings.pageTitle = pageTitle; const backgroundColor = document.getElementById('background-color').value; newSettings.backgroundColor = backgroundColor; if (Object.keys(newSettings).length > 0 && !(Object.keys(newSettings).length === 1 && 'backgroundColor' in newSettings)) { socket.emit('saveSettings', newSettings); showToast('Đã lưu cài đặt!'); document.getElementById('new-password').value = ''; document.getElementById('page-title').value = ''; } else if (Object.keys(newSettings).length === 1 && 'backgroundColor' in newSettings) { socket.emit('saveSettings', newSettings); showToast('Đã lưu màu nền!'); } else { showToast('Vui lòng nhập ít nhất một thay đổi.'); } }
-        function updateDropdown() { const dropdown = document.getElementById('history-dropdown'); const selectDiv = document.getElementById('history-select'); dropdown.innerHTML = ''; if (history.length === 0) { selectDiv.style.display = 'none'; } else { selectDiv.style.display = 'block'; history.forEach((entry, index) => { const date = new Date(entry.timestamp).toLocaleString('vi-VN'); const option = document.createElement('option'); option.value = index; option.textContent = `Phiên bản lúc: ${date}`; dropdown.appendChild(option); }); dropdown.value = history.length - 1; } renderAdmin(); }
-        socket.on('updateHistory', (newHistory) => { history = newHistory; updateDropdown(); });
-        socket.on('updateSettings', (newSettings) => { document.title = (newSettings.pageTitle || 'Admin') + ' - Dashboard'; document.getElementById('page-title').placeholder = `Tên hiện tại: ${newSettings.pageTitle || 'Chưa đặt'}`; document.getElementById('background-color').value = newSettings.backgroundColor || '#f0f8ff'; });
+
+        const templateSchedule = [
+            { day: 'Thứ 2', periods: Array(10).fill('') }, { day: 'Thứ 3', periods: Array(10).fill('') },
+            { day: 'Thứ 4', periods: Array(10).fill('') }, { day: 'Thứ 5', periods: Array(10).fill('') },
+            { day: 'Thứ 6', periods: Array(10).fill('') }, { day: 'Thứ 7', periods: Array(10).fill('') }
+        ];
+
+        function renderAdmin() {
+            if (history.length === 0) {
+                currentSchedule = JSON.parse(JSON.stringify(templateSchedule));
+            } else {
+                const selectedIndex = document.getElementById('history-dropdown').value;
+                currentSchedule = JSON.parse(JSON.stringify(history[selectedIndex].schedule));
+                currentSchedule.forEach(item => {
+                    while (item.periods.length < 10) item.periods.push('');
+                });
+            }
+            const thead = document.getElementById('admin-thead');
+            thead.innerHTML = ` <tr> <th rowspan="2">Thứ</th> <th colspan="5">Buổi Sáng</th> <th colspan="5">Buổi Chiều</th> </tr> <tr> ${Array.from({length: 5}, (_, i) => `<th>Tiết ${i+1}</th>`).join('')}${Array.from({length: 5}, (_, i) => `<th>Tiết ${i+1}</th>`).join('')} </tr> `;
+            const tbody = document.getElementById('admin-tbody');
+            tbody.innerHTML = '';
+            currentSchedule.forEach((item, rowIndex) => {
+                const row = document.createElement('tr');
+                let cellsHTML = `<td>${item.day}</td>`;
+                item.periods.forEach((period, colIndex) => {
+                    cellsHTML += `<td><input type="text" value="${period || ''}" data-row="${rowIndex}" data-col="${colIndex}"></td>`;
+                });
+                row.innerHTML = cellsHTML;
+                tbody.appendChild(row);
+            });
+        }
+
+        function saveSchedule() {
+            const inputs = document.querySelectorAll('#admin-table input[type="text"]');
+            const newSchedule = JSON.parse(JSON.stringify(currentSchedule));
+            inputs.forEach(input => {
+                const row = input.dataset.row;
+                const col = input.dataset.col;
+                newSchedule[row].periods[col] = input.value;
+            });
+            socket.emit('saveSchedule', newSchedule);
+            showToast('Đã lưu TKB và tạo phiên bản mới!');
+        }
+
+        function updateDropdown() {
+            const dropdown = document.getElementById('history-dropdown');
+            const selectDiv = document.getElementById('history-select');
+            dropdown.innerHTML = '';
+            if (history.length === 0) {
+                selectDiv.style.display = 'none';
+            } else {
+                selectDiv.style.display = 'block';
+                history.forEach((entry, index) => {
+                    const date = new Date(entry.timestamp).toLocaleString('vi-VN');
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `Phiên bản lúc: ${date}`;
+                    dropdown.appendChild(option);
+                });
+                dropdown.value = history.length - 1;
+            }
+            renderAdmin();
+        }
     </script>
 </body>
 </html>
