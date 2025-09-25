@@ -30,7 +30,6 @@
                 radial-gradient(at 0% 100%, hsla(165, 100%, 75%, 0.1) 0px, transparent 50%);
             transition: background-color 0.5s ease;
         }
-        /* ... Các CSS còn lại giữ nguyên ... */
         .selection-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 40px; flex-grow: 1; padding: 20px; }
         .choice-card { width: 320px; height: 420px; padding: 30px; box-sizing: border-box; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2); text-align: center; display: flex; flex-direction: column; justify-content: space-around; align-items: center; transition: transform 0.3s ease, box-shadow 0.3s ease; text-decoration: none; color: #fff; cursor: pointer; }
         .choice-card:hover { transform: translateY(-12px); box-shadow: 0 16px 40px 0 rgba(31, 38, 135, 0.3); }
@@ -76,36 +75,158 @@
 <body>
     
     <div class="selection-container">
+        <div class="choice-card" id="view-schedule-card">
+            <div class="icon"><i class="ph-fill ph-calendar-check"></i></div>
+            <h2>Xem Thời Khóa Biểu</h2>
+            <p>Xem lịch học chi tiết các ngày trong tuần.</p>
+            <button class="card-button">Mở Lịch</button>
         </div>
+        
+        <div class="choice-card" id="view-times-card">
+            <div class="icon"><i class="ph-fill ph-clock"></i></div>
+            <h2>Thời Gian Tiết Học</h2>
+            <p>Xem chi tiết thời gian vào lớp, ra chơi và tan học.</p>
+            <button class="card-button">Xem Chi Tiết</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="schedule-modal">
+        <div class="modal-content">
+            <button class="close-button" id="close-schedule-modal-btn">&times;</button>
+            <h1>Thời Khóa Biểu</h1>
+            <div id="schedule-info"></div>
+            <div id="no-schedule-msg" class="no-schedule" style="display: none;">Chưa có TKB nào được cập nhật.</div>
+            <div class="table-responsive-wrapper">
+                <table id="schedule-table" style="display: none;">
+                    <thead id="schedule-thead"></thead>
+                    <tbody id="schedule-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="times-modal">
+        <div class="modal-content" id="times-modal-content">
+        </div>
+    </div>
+
+    <footer class="footer-credit">
+        Made with ❤️ by <a href="https://github.com/mavrixdev" target="_blank">Mavrixdev</a>
+    </footer>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // --- Code cũ giữ nguyên ---
         const socket = io();
-        function openModal(modalId) { document.getElementById(modalId).classList.add('active'); }
-        function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
         document.getElementById('view-schedule-card').addEventListener('click', () => openModal('schedule-modal'));
         document.getElementById('close-schedule-modal-btn').addEventListener('click', () => closeModal('schedule-modal'));
-        document.getElementById('schedule-modal').addEventListener('click', (e) => { if (e.target.id === 'schedule-modal') closeModal('schedule-modal'); });
+        document.getElementById('schedule-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'schedule-modal') closeModal('schedule-modal');
+        });
+
         document.getElementById('view-times-card').addEventListener('click', () => openModal('times-modal'));
-        document.getElementById('times-modal').addEventListener('click', (e) => { if (e.target.id === 'times-modal') closeModal('times-modal'); });
-        function getColorForSubject(subject) { function hexToRgba(hex, alpha) { hex = hex.replace('#', ''); const r = parseInt(hex.substring(0, 2), 16); const g = parseInt(hex.substring(2, 4), 16); const b = parseInt(hex.substring(4, 6), 16); return `rgba(${r}, ${g}, ${b}, ${alpha})`; } const subjectColors = { 'toán': '#89cff0', 'vật lý': '#f3a683', 'hóa học': '#a8e6cf', 'sinh học': '#9bcfb5', 'công nghệ': '#dcdde1', 'văn': '#f8c291', 'văn cđ': '#f8c291', 'lịch sử': '#e5b4b4', 'sử cđ': '#e5b4b4', 'địa lý': '#b2d8b2', 'địa cđ': '#b2d8b2', 'giáo dục công dân': '#cfb4e5', 'hđtn': '#cfb4e5', 'tiếng anh': '#c7d3e1', 'thể dục': '#f1cb7d', 'chào cờ': '#ffb6c1', 'shl': '#f5f5dc', }; const lowerCaseSubject = subject.toLowerCase().trim(); if (!lowerCaseSubject) return 'rgba(255, 255, 255, 0.05)'; if (subjectColors[lowerCaseSubject]) { return hexToRgba(subjectColors[lowerCaseSubject], 0.4); } return 'rgba(255, 255, 255, 0.1)'; }
-        function renderSchedule(scheduleEntry) { const noMsg = document.getElementById('no-schedule-msg'); const table = document.getElementById('schedule-table'); const infoDiv = document.getElementById('schedule-info'); if (!scheduleEntry || !scheduleEntry.schedule) { noMsg.style.display = 'block'; table.style.display = 'none'; infoDiv.style.display = 'none'; return; } noMsg.style.display = 'none'; table.style.display = 'table'; infoDiv.style.display = 'block'; const { schedule, timestamp } = scheduleEntry; const date = new Date(timestamp).toLocaleString('vi-VN'); infoDiv.innerHTML = `Bản cập nhật mới nhất lúc: <strong>${date}</strong>`; const numPeriodsPerSession = 5; const thead = document.getElementById('schedule-thead'); const tbody = document.getElementById('schedule-tbody'); thead.innerHTML = ''; tbody.innerHTML = ''; const headerRow = document.createElement('tr'); headerRow.className = 'main-header-row'; headerRow.innerHTML = '<th>Buổi / Tiết</th>'; schedule.forEach(item => { headerRow.innerHTML += `<th>${item.day}</th>`; }); thead.appendChild(headerRow); for (let i = 0; i < numPeriodsPerSession * 2; i++) { const isMorning = i < numPeriodsPerSession; const periodNum = isMorning ? i + 1 : i - numPeriodsPerSession + 1; const sessionLabel = isMorning ? 'Sáng' : 'Chiều'; const row = document.createElement('tr'); row.innerHTML = `<td class="session-label">${periodNum} (${sessionLabel})</td>`; schedule.forEach(day => { const period = day.periods[i] || ''; const color = getColorForSubject(period); row.innerHTML += `<td style="background-color: ${color};">${period}</td>`; }); tbody.appendChild(row); } }
-        function renderTimes(timesData) { const contentDiv = document.getElementById('times-modal-content'); let html = `<button class="close-button" onclick="closeModal('times-modal')">&times;</button><h1>THỜI GIAN CÁC TIẾT HỌC</h1><p style="text-align: center; font-size: 1.2em;">${timesData.title || ''}</p><h3>Buổi Sáng</h3><table class="times-table"><thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th></tr></thead><tbody>`; (timesData.morning || []).forEach(row => { html += `<tr class="${row.isBreak ? 'break-row' : ''}"><td>${row.time}</td><td>${row.duration}</td><td>${row.content}</td></tr>`; }); html += `</tbody></table><h3>Buổi Chiều</h3><table class="times-table"><thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th></tr></thead><tbody>`; (timesData.afternoon || []).forEach(row => { html += `<tr class="${row.isBreak ? 'break-row' : ''}"><td>${row.time}</td><td>${row.duration}</td><td>${row.content}</td></tr>`; }); html += `</tbody></table>`; contentDiv.innerHTML = html; }
+        document.getElementById('times-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'times-modal') closeModal('times-modal');
+        });
         
-        // --- Code lắng nghe sự kiện được cập nhật ---
+        function getColorForSubject(subject) {
+            function hexToRgba(hex, alpha) {
+                hex = hex.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+            const subjectColors = {
+                'toán': '#89cff0', 'vật lý': '#f3a683', 'hóa học': '#a8e6cf', 
+                'sinh học': '#9bcfb5', 'công nghệ': '#dcdde1', 'văn': '#f8c291', 
+                'văn cđ': '#f8c291', 'lịch sử': '#e5b4b4', 'sử cđ': '#e5b4b4', 
+                'địa lý': '#b2d8b2', 'địa cđ': '#b2d8b2', 'giáo dục công dân': '#cfb4e5', 
+                'hđtn': '#cfb4e5', 'tiếng anh': '#c7d3e1', 'thể dục': '#f1cb7d', 
+                'chào cờ': '#ffb6c1', 'shl': '#f5f5dc',
+            };
+            const lowerCaseSubject = subject.toLowerCase().trim();
+            if (!lowerCaseSubject) return 'rgba(255, 255, 255, 0.05)';
+            if (subjectColors[lowerCaseSubject]) {
+                return hexToRgba(subjectColors[lowerCaseSubject], 0.4);
+            }
+            return 'rgba(255, 255, 255, 0.1)';
+        }
+
+        function renderSchedule(scheduleEntry) { 
+            const noMsg = document.getElementById('no-schedule-msg');
+            const table = document.getElementById('schedule-table');
+            const infoDiv = document.getElementById('schedule-info');
+            if (!scheduleEntry || !scheduleEntry.schedule) {
+                noMsg.style.display = 'block';
+                table.style.display = 'none';
+                infoDiv.style.display = 'none';
+                return;
+            }
+            noMsg.style.display = 'none';
+            table.style.display = 'table';
+            infoDiv.style.display = 'block';
+            const { schedule, timestamp } = scheduleEntry;
+            const date = new Date(timestamp).toLocaleString('vi-VN');
+            infoDiv.innerHTML = `Bản cập nhật mới nhất lúc: <strong>${date}</strong>`;
+            const numPeriodsPerSession = 5; 
+            const thead = document.getElementById('schedule-thead'); 
+            const tbody = document.getElementById('schedule-tbody'); 
+            thead.innerHTML = ''; 
+            tbody.innerHTML = ''; 
+            const headerRow = document.createElement('tr');
+            headerRow.className = 'main-header-row';
+            headerRow.innerHTML = '<th>Buổi / Tiết</th>'; 
+            schedule.forEach(item => { headerRow.innerHTML += `<th>${item.day}</th>`; }); 
+            thead.appendChild(headerRow); 
+            for (let i = 0; i < numPeriodsPerSession * 2; i++) {
+                const isMorning = i < numPeriodsPerSession;
+                const periodNum = isMorning ? i + 1 : i - numPeriodsPerSession + 1;
+                const sessionLabel = isMorning ? 'Sáng' : 'Chiều';
+                const row = document.createElement('tr');
+                row.innerHTML = `<td class="session-label">${periodNum} (${sessionLabel})</td>`; 
+                schedule.forEach(day => { 
+                    const period = day.periods[i] || ''; 
+                    const color = getColorForSubject(period);
+                    row.innerHTML += `<td style="background-color: ${color};">${period}</td>`; 
+                }); 
+                tbody.appendChild(row);
+            }
+        }
+
+        function renderTimes(timesData) {
+            const contentDiv = document.getElementById('times-modal-content');
+            let html = `
+                <button class="close-button" onclick="closeModal('times-modal')">&times;</button>
+                <h1>THỜI GIAN CÁC TIẾT HỌC</h1>
+                <p style="text-align: center; font-size: 1.2em;">${timesData.title || ''}</p>
+                <h3>Buổi Sáng</h3>
+                <table class="times-table"><thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th></tr></thead><tbody>`;
+            (timesData.morning || []).forEach(row => {
+                html += `<tr class="${row.isBreak ? 'break-row' : ''}"><td>${row.time}</td><td>${row.duration}</td><td>${row.content}</td></tr>`;
+            });
+            html += `</tbody></table><h3>Buổi Chiều</h3><table class="times-table"><thead><tr><th>Thời gian</th><th>Thời lượng</th><th>Nội dung</th></tr></thead><tbody>`;
+            (timesData.afternoon || []).forEach(row => {
+                html += `<tr class="${row.isBreak ? 'break-row' : ''}"><td>${row.time}</td><td>${row.duration}</td><td>${row.content}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            contentDiv.innerHTML = html;
+        }
+        
         socket.on('latestSchedule', (scheduleEntry) => { renderSchedule(scheduleEntry); });
         socket.on('updateTimes', (timesData) => { renderTimes(timesData); });
 
         socket.on('updateSettings', (newSettings) => { 
             document.title = (newSettings.pageTitle || 'Trang Chủ') + ' - TKB'; 
-            
             const newColor = newSettings.backgroundColor || '#f0f8ff';
-            
-            // 1. Áp dụng màu mới nhận được từ server
             document.documentElement.style.setProperty('--background-color', newColor);
-            
-            // 2. CẬP NHẬT: Lưu màu này vào localStorage để dùng cho lần sau
             localStorage.setItem('tkb-background-color', newColor);
         });
     </script>
