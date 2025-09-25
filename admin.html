@@ -124,12 +124,16 @@
             }
             newSettings.backgroundColor = document.getElementById('background-color').value;
 
-            if (Object.keys(newSettings).length > 0) {
-                socket.emit('saveSettings', newSettings);
-                showToast('Đã lưu cài đặt!');
-                document.getElementById('new-password').value = '';
-                if(pageTitle) document.getElementById('page-title').value = '';
-            } else {
+            if (Object.keys(newSettings).length > 1 || (Object.keys(newSettings).length === 1 && !newSettings.hasOwnProperty('backgroundColor'))) {
+                 socket.emit('saveSettings', newSettings);
+                 showToast('Đã lưu cài đặt!');
+                 document.getElementById('new-password').value = '';
+                 if(pageTitle) document.getElementById('page-title').value = '';
+            } else if (Object.keys(newSettings).length === 1 && newSettings.hasOwnProperty('backgroundColor')) {
+                 socket.emit('saveSettings', newSettings);
+                 showToast('Đã lưu màu nền!');
+            }
+            else {
                 showToast('Không có thay đổi nào để lưu.');
             }
         }
