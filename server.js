@@ -8,7 +8,6 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const mysql = require('mysql2'); // Vẫn cần cho serverless-mysql
 const serverlessMysql = require('serverless-mysql');
 const bcrypt = require('bcryptjs'); // Sử dụng bcrypt để hash password
 
