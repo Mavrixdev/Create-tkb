@@ -51,9 +51,10 @@
         <div id="login-section">
             <div class="login-card card">
                 <h1><i class="ph-fill ph-lock"></i> Admin Login</h1>
-                <input type="password" id="password-input" placeholder="Nhập mật khẩu Admin...">
+                <input type="text" id="username-input" placeholder="Tên đăng nhập...">
+                <input type="password" id="password-input" placeholder="Nhập mật khẩu...">
                 <button onclick="attemptLogin()">Đăng Nhập</button>
-                <div id="auth-error">Mật khẩu không đúng. Vui lòng thử lại.</div>
+                <div id="auth-error">Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại.</div>
             </div>
         </div>
         <div id="admin-content">
@@ -161,11 +162,14 @@
         }
 
         function attemptLogin() {
-            if (!passwordInput.value) return;
+            const username = document.getElementById('username-input').value;
+            const password = document.getElementById('password-input').value;
+            if (!username || !password) return;
             if (socket) socket.disconnect();
             socket = io('/admin', { 
                 transports: ["polling"], 
-                auth: { password: passwordInput.value } });
+                auth: { username, password }
+            });
             socket.on('connect_error', (err) => {
                 authError.style.display = 'block';
                 socket.disconnect();
