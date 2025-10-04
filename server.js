@@ -28,7 +28,7 @@ let history = loadJSON(SCHEDULES_FILE, []);
 let timesData = loadJSON(TIMES_FILE, { title: '', morning: [], afternoon: [] });
 
 const defaultSettings = {
-    adminPassword: process.env.ADMIN_PASSWORD || loadJSON(SETTINGS_FILE, {}).adminPassword || "admin",
+    adminPassword: process.env.ADMIN_PASSWORD || "admin",
     pageTitle: "Thời Khóa Biểu",
     backgroundColor: "#ffffff",
 };
