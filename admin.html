@@ -169,29 +169,28 @@
                 alert('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
                 return;
             }
-
+        
             if (socket) {
                 socket.disconnect();
             }
-
-            // CORRECTED CODE: The 'transports' line has been removed.
+        
+            // ĐÃ SỬA: Xóa bỏ "transports: ['polling']"
             socket = io('/admin', {
                 auth: { username, password }
             });
-
-            // This listener for successful login is perfect.
+        
             socket.on('authSuccess', () => {
-                console.log("Authentication successful! Loading admin panel.");
-                authError.style.display = 'none'; // Hide any previous errors
+                console.log("Xác thực thành công! Đang tải bảng điều khiển.");
+                authError.style.display = 'none';
                 loginSection.style.display = 'none';
                 adminContent.style.display = 'block';
                 initializeAdminPanel();
             });
             
-            // This listener for errors is also perfect.
             socket.on('connect_error', (err) => {
-                console.error("Authentication failed:", err.message);
-                authError.textContent = 'Lỗi: ' + err.message; // Show the real error from the server
+                console.error("Xác thực thất bại:", err.message);
+                // Hiển thị lỗi thật từ server thay vì lỗi chung chung
+                authError.textContent = 'Lỗi: ' + err.message;
                 authError.style.display = 'block';
                 if (socket) {
                     socket.disconnect();
@@ -353,3 +352,4 @@
     </script>
 </body>
 </html>
+
