@@ -57,7 +57,7 @@
             </div>
         </div>
         <div id="admin-content">
-            <h1><i class="ph-fill ph-gauge"></i> Admin Dashboard</h1>
+            <h1><i class="ph-fill ph-gauge"></i> Admin Dashboard </h1>
             <div class="card">
                 <h2>Chỉnh Sửa Thời Khóa Biểu</h2>
                 <div id="history-select" style="display: none;"><label for="history-dropdown">Xem phiên bản cũ:</label><select id="history-dropdown" onchange="renderAdmin()"></select></div>
@@ -163,7 +163,9 @@
         function attemptLogin() {
             if (!passwordInput.value) return;
             if (socket) socket.disconnect();
-            socket = io('/admin', { transports: ["polling"], auth: { password: passwordInput.value } });
+            socket = io('/admin', { 
+                transports: ["polling"], 
+                auth: { password: passwordInput.value } });
             socket.on('connect_error', (err) => {
                 authError.style.display = 'block';
                 socket.disconnect();
