@@ -28,7 +28,7 @@ let history = loadJSON(SCHEDULES_FILE, []);
 let timesData = loadJSON(TIMES_FILE, { title: '', morning: [], afternoon: [] });
 
 const defaultSettings = {
-    adminPassword: process.env.ADMIN_PASSWORD || "admin",
+    adminPassword: process.env.ADMIN_PASSWORD,
     pageTitle: "Thời Khóa Biểu",
     backgroundColor: "#ffffff",
 };
@@ -132,4 +132,5 @@ const PORT = process.env.PORT || 80;
 server.listen(PORT, () => {
     console.log(`🚀 Server đang chạy trên cổng ${PORT}`);
 });
+
 
