@@ -149,7 +149,7 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io({ transports: ["polling"] });
+        const socket = io();
 
         // Tải dữ liệu từ cache ngay khi trang được tải
         let latestScheduleEntry = JSON.parse(localStorage.getItem('tkb-latest-schedule'));
