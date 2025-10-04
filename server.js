@@ -9,17 +9,21 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const mysql = require('mysql2/promise');
-const bcrypt = require('bcryptjs'); // Để bảo mật hơn, dùng bcrypt hash mật khẩu
+const bcrypt = require('bcryptjs'); // Sử dụng bcrypt để hash password
 
 const SCHEDULES_FILE = path.join(__dirname, 'schedules.json');
 const TIMES_FILE = path.join(__dirname, 'times.json');
 
+// Tăng timeout cho pool để tránh ETIMEDOUT
 const db = mysql.createPool({
     host: 'server.dichvucheap.vn',
     user: 'phkctgnx_ntmdz',
     password: '5vYH.c1ijLUq',
     database: 'phkctgnx_tkb',
-    port: 3306 // hoặc 3306 nếu không dùng cổng đặc biệt
+    port: 3306,
+    connectTimeout: 30000,  // Tăng timeout kết nối (30 giây)
+    connectionLimit: 10,   // Giới hạn pool để tránh overload
+    waitForConnections: true
 });
 
 function loadJSON(filePath, defaultValue) {
@@ -36,9 +40,23 @@ function loadJSON(filePath, defaultValue) {
 
 let history = loadJSON(SCHEDULES_FILE, []);
 let timesData = loadJSON(TIMES_FILE, { title: '', morning: [], afternoon: [] });
+let currentSettings = {};  // Declare biến này để tránh lỗi undefined
 
 (async () => {
-    currentSettings = await getSettings();
+    try {
+        currentSettings = await getSettings();  // Handle error ở đây
+    } catch (error) {
+        console.error('Lỗi khi load settings ban đầu:', error);
+        currentSettings = {  // Default nếu fail
+            pageTitle: 'Default Title',
+            backgroundColor: '#ffffff',
+            favicon: '',
+            ogTitle: '',
+            ogDescription: '',
+            canonical: '',
+            keywords: ''
+        };
+    }
 })();
 
 app.use(express.static(path.join(__dirname)));
@@ -50,17 +68,20 @@ publicNamespace.on('connection', async (socket) => {
     console.log('Người Dùng Mới Kết Nối');
     const latestScheduleEntry = history.length > 0 ? history[history.length - 1] : null;
     socket.emit('latestSchedule', latestScheduleEntry);
-    // Lấy settings mới nhất từ DB
-    const settings = await getSettings();
-    socket.emit('updateSettings', { 
-        pageTitle: settings.pageTitle, 
-        backgroundColor: settings.backgroundColor,
-        favicon: settings.favicon || '',
-        ogTitle: settings.ogTitle || '',
-        ogDescription: settings.ogDescription || '',
-        canonical: settings.canonical || '',
-        keywords: settings.keywords || ''
-    });
+    try {
+        const settings = await getSettings();  // Handle error
+        socket.emit('updateSettings', { 
+            pageTitle: settings.pageTitle, 
+            backgroundColor: settings.backgroundColor,
+            favicon: settings.favicon || '',
+            ogTitle: settings.ogTitle || '',
+            ogDescription: settings.ogDescription || '',
+            canonical: settings.canonical || '',
+            keywords: settings.keywords || ''
+        });
+    } catch (error) {
+        console.error('Lỗi emit settings:', error);
+    }
     socket.emit('updateTimes', timesData);
 });
 
@@ -72,13 +93,15 @@ adminNamespace.use(async (socket, next) => {
         const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
         if (rows.length === 0) return next(new Error('Tài khoản không tồn tại'));
         const user = rows[0];
-        if (password === user.password) {
+        // Sử dụng bcrypt để so sánh password (giả sử password trong DB đã hash)
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (isMatch) {
             return next();
         } else {
             return next(new Error('Sai mật khẩu'));
         }
     } catch (err) {
-        console.error(err);
+        console.error('Lỗi auth:', err);
         return next(new Error('Lỗi kết nối database'));
     }
 });
@@ -100,67 +123,92 @@ adminNamespace.on('connection', (socket) => {
     socket.on('saveSchedule', (newSchedule) => {
         const newEntry = { timestamp: new Date().toISOString(), schedule: newSchedule };
         history.push(newEntry);
-        fs.writeFileSync(SCHEDULES_FILE, JSON.stringify(history, null, 2));
+        try {
+            fs.writeFileSync(SCHEDULES_FILE, JSON.stringify(history, null, 2));  // Nhưng trên Vercel, nên migrate sang DB
+        } catch (error) {
+            console.error('Lỗi lưu file schedules:', error);
+        }
         adminNamespace.emit('updateHistory', history);
         publicNamespace.emit('latestSchedule', newEntry);
     });
 
     socket.on('saveTimes', (newTimesData) => {
         timesData = newTimesData;
-        fs.writeFileSync(TIMES_FILE, JSON.stringify(timesData, null, 2));
+        try {
+            fs.writeFileSync(TIMES_FILE, JSON.stringify(timesData, null, 2));  // Tương tự, migrate sang DB
+        } catch (error) {
+            console.error('Lỗi lưu file times:', error);
+        }
         io.emit('updateTimes', timesData);
     });
         
     socket.on('saveSettings', async (newSettings) => {
-        // Nếu có đổi mật khẩu admin
-        if (newSettings.adminPassword) {
-            // Giả sử chỉ có 1 admin, username là 'admin'
-            await db.query('UPDATE users SET password = ? WHERE username = ?', [newSettings.adminPassword, 'admin']);
+        try {
+            // Nếu có đổi mật khẩu admin, hash trước khi lưu
+            if (newSettings.adminPassword) {
+                const hashedPassword = await bcrypt.hash(newSettings.adminPassword, 10);
+                await db.query('UPDATE users SET password = ? WHERE username = ?', [hashedPassword, 'admin']);
+            }
+            delete newSettings.adminPassword; // Không lưu vào settings
+            Object.assign(currentSettings, newSettings);
+            await saveSettings(currentSettings);
+            const publicSettings = { 
+                pageTitle: currentSettings.pageTitle, 
+                backgroundColor: currentSettings.backgroundColor,
+                favicon: currentSettings.favicon,
+                ogTitle: currentSettings.ogTitle,
+                ogDescription: currentSettings.ogDescription,
+                canonical: currentSettings.canonical,
+                keywords: currentSettings.keywords
+            };
+            io.emit('updateSettings', publicSettings);
+        } catch (error) {
+            console.error('Lỗi save settings:', error);
         }
-        // Cập nhật các settings khác vào bảng settings như cũ
-        // (giả sử bạn đã có hàm saveSettings cho bảng settings)
-        delete newSettings.adminPassword; // Không lưu vào settings
-        Object.assign(currentSettings, newSettings);
-        await saveSettings(currentSettings);
-        const publicSettings = { 
-            pageTitle: currentSettings.pageTitle, 
-            backgroundColor: currentSettings.backgroundColor,
-            favicon: currentSettings.favicon,
-            ogTitle: currentSettings.ogTitle,
-            ogDescription: currentSettings.ogDescription,
-            canonical: currentSettings.canonical,
-            keywords: currentSettings.keywords
-        };
-        io.emit('updateSettings', publicSettings);
     });
 
     socket.on('changeAdminPassword', async ({ username, newPassword }) => {
         if (!username || !newPassword) return;
-        await db.query('UPDATE users SET password = ? WHERE username = ?', [newPassword, username]);
-        socket.emit('passwordChanged', true);
+        try {
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            await db.query('UPDATE users SET password = ? WHERE username = ?', [hashedPassword, username]);
+            socket.emit('passwordChanged', true);
+        } catch (error) {
+            console.error('Lỗi change password:', error);
+        }
     });
 });
 
 async function getSettings() {
-    const [rows] = await db.query('SELECT * FROM settings WHERE id=1');
-    return rows[0];
+    try {
+        const [rows] = await db.query('SELECT * FROM settings WHERE id=1');
+        return rows[0] || {};  // Trả default nếu không có row
+    } catch (error) {
+        console.error('Lỗi getSettings:', error);
+        throw error;  // Để caller handle
+    }
 }
 
 async function saveSettings(newSettings) {
-    await db.query(
-        `UPDATE settings SET 
-            pageTitle=?, backgroundColor=?, favicon=?, ogTitle=?, ogDescription=?, canonical=?, keywords=?
-         WHERE id=1`,
-        [
-            newSettings.pageTitle,
-            newSettings.backgroundColor,
-            newSettings.favicon,
-            newSettings.ogTitle,
-            newSettings.ogDescription,
-            newSettings.canonical,
-            newSettings.keywords
-        ]
-    );
+    try {
+        await db.query(
+            `UPDATE settings SET 
+                pageTitle=?, backgroundColor=?, favicon=?, ogTitle=?, ogDescription=?, canonical=?, keywords=?
+             WHERE id=1`,
+            [
+                newSettings.pageTitle,
+                newSettings.backgroundColor,
+                newSettings.favicon,
+                newSettings.ogTitle,
+                newSettings.ogDescription,
+                newSettings.canonical,
+                newSettings.keywords
+            ]
+        );
+    } catch (error) {
+        console.error('Lỗi saveSettings:', error);
+        throw error;
+    }
 }
 
 const PORT = process.env.PORT || 80;
