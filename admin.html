@@ -164,20 +164,38 @@
         function attemptLogin() {
             const username = document.getElementById('username-input').value;
             const password = document.getElementById('password-input').value;
-            if (!username || !password) return;
-            if (socket) socket.disconnect();
-            socket = io('/admin', { 
-                transports: ["polling"], 
+            
+            if (!username || !password) {
+                alert('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
+                return;
+            }
+
+            if (socket) {
+                socket.disconnect();
+            }
+
+            // CORRECTED CODE: The 'transports' line has been removed.
+            socket = io('/admin', {
                 auth: { username, password }
             });
-            socket.on('connect_error', (err) => {
-                authError.style.display = 'block';
-                socket.disconnect();
-            });
+
+            // This listener for successful login is perfect.
             socket.on('authSuccess', () => {
+                console.log("Authentication successful! Loading admin panel.");
+                authError.style.display = 'none'; // Hide any previous errors
                 loginSection.style.display = 'none';
                 adminContent.style.display = 'block';
                 initializeAdminPanel();
+            });
+            
+            // This listener for errors is also perfect.
+            socket.on('connect_error', (err) => {
+                console.error("Authentication failed:", err.message);
+                authError.textContent = 'Lỗi: ' + err.message; // Show the real error from the server
+                authError.style.display = 'block';
+                if (socket) {
+                    socket.disconnect();
+                }
             });
         }
 
