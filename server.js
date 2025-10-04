@@ -106,32 +106,37 @@ publicNamespace.on('connection', async (socket) => {
 const adminNamespace = io.of('/admin');
 adminNamespace.use(async (socket, next) => {
     const { username, password } = socket.handshake.auth;
-    if (!username || !password) return next(new Error('Thiếu thông tin đăng nhập'));
+
+    if (!username || !password) {
+        return next(new Error('Thiếu thông tin đăng nhập'));
+    }
+
     try {
-        await pingDb();
-        const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-        console.log('Query rows for username ' + username + ':', JSON.stringify(rows));  // Thêm log để debug rows
-        if (rows.length === 0) return next(new Error('Tài khoản không tồn tại'));
+        // SỬA Ở ĐÂY: Bỏ dấu ngoặc vuông [] quanh 'rows'
+        const rows = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+
+        console.log(`Query result for username '${username}':`, JSON.stringify(rows));
+
+        // Bây giờ 'rows' là một mảng, nên logic này sẽ chạy đúng
+        if (!rows || rows.length === 0) {
+            return next(new Error('Tài khoản không tồn tại'));
+        }
+
         const user = rows[0];
-        if (!user) {
-            console.error('Rows length > 0 but user is undefined:', rows);
-            return next(new Error('User not found - internal error'));
-        }
-        // Thêm check để tránh undefined password
-        if (typeof user.password === 'undefined' || user.password === null) {
-            console.error('User found but password is undefined/null:', JSON.stringify(user));
-            return next(new Error('Mật khẩu không hợp lệ hoặc không tồn tại'));
-        }
-        // Sử dụng bcrypt để so sánh password (giả sử password trong DB đã hash)
+
         const isMatch = await bcrypt.compare(password, user.password);
+
         if (isMatch) {
+            console.log(`User '${username}' authenticated successfully.`);
             return next();
         } else {
+            console.log(`Authentication failed for user '${username}': Incorrect password.`);
             return next(new Error('Sai mật khẩu'));
         }
+
     } catch (err) {
-        console.error('Lỗi auth:', err);
-        return next(new Error('Lỗi kết nối database'));
+        console.error('Lỗi xác thực:', err);
+        return next(new Error('Lỗi hệ thống, không thể xác thực'));
     }
 });
 
@@ -212,12 +217,15 @@ adminNamespace.on('connection', (socket) => {
 
 async function getSettings() {
     try {
-        await pingDb();  // Ping trước query
-        const [rows] = await db.query('SELECT * FROM settings WHERE id=1');
-        return rows[0] || {};  // Trả default nếu không có row
+        await pingDb();
+        // Sửa ở đây: Bỏ dấu ngoặc vuông []
+        const rows = await db.query('SELECT * FROM settings WHERE id=1');
+        
+        // Logic này giờ sẽ chạy đúng vì 'rows' là một mảng
+        return rows[0] || {}; 
     } catch (error) {
         console.error('Lỗi getSettings:', error);
-        throw error;  // Để caller handle
+        throw error;
     }
 }
 
