@@ -8,9 +8,19 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+const mysql = require('mysql2/promise');
+const bcrypt = require('bcryptjs'); // Để bảo mật hơn, dùng bcrypt hash mật khẩu
+
 const SCHEDULES_FILE = path.join(__dirname, 'schedules.json');
 const TIMES_FILE = path.join(__dirname, 'times.json');
-const SETTINGS_FILE = path.join(__dirname, 'settings.json');
+
+const db = mysql.createPool({
+    host: 'server.dichvucheap.vn',
+    user: 'phkctgnx_ntmdz',
+    password: '5vYH.c1ijLUq',
+    database: 'phkctgnx_tkb',
+    port: 3306 // hoặc 3306 nếu không dùng cổng đặc biệt
+});
 
 function loadJSON(filePath, defaultValue) {
     try {
@@ -27,36 +37,50 @@ function loadJSON(filePath, defaultValue) {
 let history = loadJSON(SCHEDULES_FILE, []);
 let timesData = loadJSON(TIMES_FILE, { title: '', morning: [], afternoon: [] });
 
-const defaultSettings = {
-    adminPassword: process.env.ADMIN_PASSWORD,
-    pageTitle: "Thời Khóa Biểu",
-    backgroundColor: "#ffffff",
-};
-let currentSettings = { ...defaultSettings, ...loadJSON(SETTINGS_FILE, {}) };
+(async () => {
+    currentSettings = await getSettings();
+})();
 
 app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 app.get('/admin', (req, res) => { res.sendFile(path.join(__dirname, 'admin.html')); });
 
 const publicNamespace = io.of('/');
-publicNamespace.on('connection', (socket) => {
+publicNamespace.on('connection', async (socket) => {
     console.log('Người Dùng Mới Kết Nối');
     const latestScheduleEntry = history.length > 0 ? history[history.length - 1] : null;
     socket.emit('latestSchedule', latestScheduleEntry);
+    // Lấy settings mới nhất từ DB
+    const settings = await getSettings();
     socket.emit('updateSettings', { 
-        pageTitle: currentSettings.pageTitle, 
-        backgroundColor: currentSettings.backgroundColor,
+        pageTitle: settings.pageTitle, 
+        backgroundColor: settings.backgroundColor,
+        favicon: settings.favicon || '',
+        ogTitle: settings.ogTitle || '',
+        ogDescription: settings.ogDescription || '',
+        canonical: settings.canonical || '',
+        keywords: settings.keywords || ''
     });
     socket.emit('updateTimes', timesData);
 });
 
 const adminNamespace = io.of('/admin');
-adminNamespace.use((socket, next) => {
-    const password = socket.handshake.auth.password;
-    if (password && password === currentSettings.adminPassword) {
-        return next();
+adminNamespace.use(async (socket, next) => {
+    const { username, password } = socket.handshake.auth;
+    if (!username || !password) return next(new Error('Thiếu thông tin đăng nhập'));
+    try {
+        const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+        if (rows.length === 0) return next(new Error('Tài khoản không tồn tại'));
+        const user = rows[0];
+        if (password === user.password) {
+            return next();
+        } else {
+            return next(new Error('Sai mật khẩu'));
+        }
+    } catch (err) {
+        console.error(err);
+        return next(new Error('Lỗi kết nối database'));
     }
-    return next(new Error('Authentication error'));
 });
 
 adminNamespace.on('connection', (socket) => {
@@ -87,34 +111,17 @@ adminNamespace.on('connection', (socket) => {
         io.emit('updateTimes', timesData);
     });
         
-    socket.on('saveSettings', (newSettings) => {
-        // Chỉ cho đổi mật khẩu nếu KHÔNG chạy trên Vercel (không có biến môi trường ADMIN_PASSWORD)
-        if (!process.env.ADMIN_PASSWORD && newSettings.hasOwnProperty('adminPassword') && newSettings.adminPassword) {
-            currentSettings.adminPassword = newSettings.adminPassword;
+    socket.on('saveSettings', async (newSettings) => {
+        // Nếu có đổi mật khẩu admin
+        if (newSettings.adminPassword) {
+            // Giả sử chỉ có 1 admin, username là 'admin'
+            await db.query('UPDATE users SET password = ? WHERE username = ?', [newSettings.adminPassword, 'admin']);
         }
-        if (newSettings.hasOwnProperty('pageTitle')) {
-            currentSettings.pageTitle = newSettings.pageTitle;
-        }
-        if (newSettings.hasOwnProperty('backgroundColor')) {
-            currentSettings.backgroundColor = newSettings.backgroundColor;
-        }
-        // Thêm các trường meta mới
-        if (newSettings.hasOwnProperty('favicon')) {
-            currentSettings.favicon = newSettings.favicon;
-        }
-        if (newSettings.hasOwnProperty('ogTitle')) {
-            currentSettings.ogTitle = newSettings.ogTitle;
-        }
-        if (newSettings.hasOwnProperty('ogDescription')) {
-            currentSettings.ogDescription = newSettings.ogDescription;
-        }
-        if (newSettings.hasOwnProperty('canonical')) {
-            currentSettings.canonical = newSettings.canonical;
-        }
-        if (newSettings.hasOwnProperty('keywords')) {
-            currentSettings.keywords = newSettings.keywords;
-        }
-        fs.writeFileSync(SETTINGS_FILE, JSON.stringify(currentSettings, null, 2));
+        // Cập nhật các settings khác vào bảng settings như cũ
+        // (giả sử bạn đã có hàm saveSettings cho bảng settings)
+        delete newSettings.adminPassword; // Không lưu vào settings
+        Object.assign(currentSettings, newSettings);
+        await saveSettings(currentSettings);
         const publicSettings = { 
             pageTitle: currentSettings.pageTitle, 
             backgroundColor: currentSettings.backgroundColor,
@@ -126,11 +133,37 @@ adminNamespace.on('connection', (socket) => {
         };
         io.emit('updateSettings', publicSettings);
     });
+
+    socket.on('changeAdminPassword', async ({ username, newPassword }) => {
+        if (!username || !newPassword) return;
+        await db.query('UPDATE users SET password = ? WHERE username = ?', [newPassword, username]);
+        socket.emit('passwordChanged', true);
+    });
 });
+
+async function getSettings() {
+    const [rows] = await db.query('SELECT * FROM settings WHERE id=1');
+    return rows[0];
+}
+
+async function saveSettings(newSettings) {
+    await db.query(
+        `UPDATE settings SET 
+            pageTitle=?, backgroundColor=?, favicon=?, ogTitle=?, ogDescription=?, canonical=?, keywords=?
+         WHERE id=1`,
+        [
+            newSettings.pageTitle,
+            newSettings.backgroundColor,
+            newSettings.favicon,
+            newSettings.ogTitle,
+            newSettings.ogDescription,
+            newSettings.canonical,
+            newSettings.keywords
+        ]
+    );
+}
 
 const PORT = process.env.PORT || 80;
 server.listen(PORT, () => {
     console.log(`🚀 Server đang chạy trên cổng ${PORT}`);
 });
-
-
