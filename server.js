@@ -57,7 +57,7 @@ app.get('/admin', (req, res) => { res.sendFile(path.join(__dirname, 'admin.html'
 
 const publicNamespace = io.of('/');
 publicNamespace.on('connection', (socket) => {
-    console.log('A user connected to public');
+    console.log('Người Dùng Mới Kết Nối');
     const latestScheduleEntry = history.length > 0 ? history[history.length - 1] : null;
     socket.emit('latestSchedule', latestScheduleEntry);
     socket.emit('updateSettings', { 
@@ -77,7 +77,7 @@ adminNamespace.use((socket, next) => {
 });
 
 adminNamespace.on('connection', (socket) => {
-    console.log('An admin connected');
+    console.log('Đã Vào Trang Quản Trị');
     socket.emit('authSuccess');
     socket.emit('updateHistory', history);
     socket.emit('updateSettings', { 
@@ -121,8 +121,7 @@ adminNamespace.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 80;
 server.listen(PORT, () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`🚀 Server đang chạy trên cổng ${PORT}`);
 });
-
