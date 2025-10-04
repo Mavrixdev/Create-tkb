@@ -88,7 +88,8 @@ adminNamespace.on('connection', (socket) => {
     });
         
     socket.on('saveSettings', (newSettings) => {
-        if (newSettings.hasOwnProperty('adminPassword') && newSettings.adminPassword) {
+        // Chỉ cho đổi mật khẩu nếu KHÔNG chạy trên Vercel (không có biến môi trường ADMIN_PASSWORD)
+        if (!process.env.ADMIN_PASSWORD && newSettings.hasOwnProperty('adminPassword') && newSettings.adminPassword) {
             currentSettings.adminPassword = newSettings.adminPassword;
         }
         if (newSettings.hasOwnProperty('pageTitle')) {
@@ -131,3 +132,4 @@ const PORT = process.env.PORT || 80;
 server.listen(PORT, () => {
     console.log(`🚀 Server đang chạy trên cổng ${PORT}`);
 });
+
