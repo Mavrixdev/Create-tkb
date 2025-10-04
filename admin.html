@@ -94,6 +94,26 @@
                     <div class="form-group"><label for="new-password">Đổi Mật Khẩu Admin:</label><input type="password" id="new-password" placeholder="Để trống nếu không đổi"></div>
                     <div class="form-group"><label for="page-title">Đổi Tên Trang:</label><input type="text" id="page-title" placeholder="Tên mới cho TKB"></div>
                     <div class="form-group"><label>Đổi Màu Nền:</label><div class="color-picker-group"><input type="color" id="background-color" value="#f0f8ff"><span>Chọn màu</span></div></div>
+                    <div class="form-group">
+                        <label for="favicon-url">Favicon (URL ảnh .ico/.png):</label>
+                        <input type="text" id="favicon-url" placeholder="Nhập URL favicon">
+                    </div>
+                    <div class="form-group">
+                        <label for="og-title">OG Title:</label>
+                        <input type="text" id="og-title" placeholder="Tiêu đề chia sẻ mạng xã hội">
+                    </div>
+                    <div class="form-group">
+                        <label for="og-description">OG Description:</label>
+                        <input type="text" id="og-description" placeholder="Mô tả chia sẻ mạng xã hội">
+                    </div>
+                    <div class="form-group">
+                        <label for="canonical-url">Canonical URL:</label>
+                        <input type="text" id="canonical-url" placeholder="https://mavrixdev.vercel.app/">
+                    </div>
+                    <div class="form-group">
+                        <label for="meta-keywords">Keywords:</label>
+                        <input type="text" id="meta-keywords" placeholder="ntmdz,tkbntmdz,ntmdztkb,Mavrixdev,...">
+                    </div>
                 </div>
                 <button onclick="saveSettings()">Lưu Cài Đặt</button>
             </div>
@@ -115,25 +135,27 @@
         function saveSettings() {
             const newSettings = {};
             const newPassword = document.getElementById('new-password').value;
-            if (newPassword) {
-                newSettings.adminPassword = newPassword;
-            }
+            if (newPassword) newSettings.adminPassword = newPassword;
             const pageTitle = document.getElementById('page-title').value;
-            if (pageTitle) {
-                newSettings.pageTitle = pageTitle;
-            }
+            if (pageTitle) newSettings.pageTitle = pageTitle;
             newSettings.backgroundColor = document.getElementById('background-color').value;
 
+            // Thêm các trường meta mới
+            newSettings.favicon = document.getElementById('favicon-url').value;
+            newSettings.ogTitle = document.getElementById('og-title').value;
+            newSettings.ogDescription = document.getElementById('og-description').value;
+            newSettings.canonical = document.getElementById('canonical-url').value;
+            newSettings.keywords = document.getElementById('meta-keywords').value;
+
             if (Object.keys(newSettings).length > 1 || (Object.keys(newSettings).length === 1 && !newSettings.hasOwnProperty('backgroundColor'))) {
-                 socket.emit('saveSettings', newSettings);
-                 showToast('Đã lưu cài đặt!');
-                 document.getElementById('new-password').value = '';
-                 if(pageTitle) document.getElementById('page-title').value = '';
+                socket.emit('saveSettings', newSettings);
+                showToast('Đã lưu cài đặt!');
+                document.getElementById('new-password').value = '';
+                // KHÔNG xóa các trường khác
             } else if (Object.keys(newSettings).length === 1 && newSettings.hasOwnProperty('backgroundColor')) {
-                 socket.emit('saveSettings', newSettings);
-                 showToast('Đã lưu màu nền!');
-            }
-            else {
+                socket.emit('saveSettings', newSettings);
+                showToast('Đã lưu màu nền!');
+            } else {
                 showToast('Không có thay đổi nào để lưu.');
             }
         }
@@ -166,6 +188,11 @@
                 document.title = (newSettings.pageTitle || 'Admin') + ' - Dashboard';
                 document.getElementById('page-title').placeholder = `Tên hiện tại: ${newSettings.pageTitle || 'Chưa đặt'}`;
                 document.getElementById('background-color').value = newSettings.backgroundColor || '#f0f8ff';
+                document.getElementById('favicon-url').value = newSettings.favicon || '';
+                document.getElementById('og-title').value = newSettings.ogTitle || '';
+                document.getElementById('og-description').value = newSettings.ogDescription || '';
+                document.getElementById('canonical-url').value = newSettings.canonical || '';
+                document.getElementById('meta-keywords').value = newSettings.keywords || '';
             });
             socket.on('updateTimes', (timesData) => {
                 renderTimesEditor(timesData);
