@@ -1,10 +1,12 @@
 const express = require('express');
 const http = require('http');
 const fs = require('fs');
+const { Server } = require('socket.io');
 const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
+const io = new Server(server);
 
 const SCHEDULES_FILE = path.join(__dirname, 'schedules.json');
 const TIMES_FILE = path.join(__dirname, 'times.json');
@@ -64,8 +66,12 @@ adminNamespace.on('connection', (socket) => {
     socket.emit('updateSettings', { 
         pageTitle: currentSettings.pageTitle, 
         backgroundColor: currentSettings.backgroundColor,
+        favicon: currentSettings.favicon || '',
+        ogTitle: currentSettings.ogTitle || '',
+        ogDescription: currentSettings.ogDescription || '',
+        canonical: currentSettings.canonical || '',
+        keywords: currentSettings.keywords || ''
     });
-    socket.emit('updateTimes', timesData);
 
     socket.on('saveSchedule', (newSchedule) => {
         const newEntry = { timestamp: new Date().toISOString(), schedule: newSchedule };
@@ -83,7 +89,7 @@ adminNamespace.on('connection', (socket) => {
         
     socket.on('saveSettings', (newSettings) => {
         if (newSettings.hasOwnProperty('adminPassword') && newSettings.adminPassword) {
-            currentSettings.adminPassword = newSettings.adminPassword; // Không mã hóa
+            currentSettings.adminPassword = newSettings.adminPassword;
         }
         if (newSettings.hasOwnProperty('pageTitle')) {
             currentSettings.pageTitle = newSettings.pageTitle;
@@ -91,11 +97,31 @@ adminNamespace.on('connection', (socket) => {
         if (newSettings.hasOwnProperty('backgroundColor')) {
             currentSettings.backgroundColor = newSettings.backgroundColor;
         }
+        // Thêm các trường meta mới
+        if (newSettings.hasOwnProperty('favicon')) {
+            currentSettings.favicon = newSettings.favicon;
+        }
+        if (newSettings.hasOwnProperty('ogTitle')) {
+            currentSettings.ogTitle = newSettings.ogTitle;
+        }
+        if (newSettings.hasOwnProperty('ogDescription')) {
+            currentSettings.ogDescription = newSettings.ogDescription;
+        }
+        if (newSettings.hasOwnProperty('canonical')) {
+            currentSettings.canonical = newSettings.canonical;
+        }
+        if (newSettings.hasOwnProperty('keywords')) {
+            currentSettings.keywords = newSettings.keywords;
+        }
         fs.writeFileSync(SETTINGS_FILE, JSON.stringify(currentSettings, null, 2));
-        
         const publicSettings = { 
             pageTitle: currentSettings.pageTitle, 
             backgroundColor: currentSettings.backgroundColor,
+            favicon: currentSettings.favicon,
+            ogTitle: currentSettings.ogTitle,
+            ogDescription: currentSettings.ogDescription,
+            canonical: currentSettings.canonical,
+            keywords: currentSettings.keywords
         };
         io.emit('updateSettings', publicSettings);
     });
