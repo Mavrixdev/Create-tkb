@@ -54,6 +54,64 @@
     </script>
 </head>
 <body>
+    <div id="loading-overlay" style="position:fixed;z-index:2000;top:0;left:0;width:100vw;height:100vh;background:linear-gradient(135deg,#232526 0%,#414345 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+            <defs>
+                <linearGradient id="loader-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#4F46E5"/>
+                    <stop offset="100%" stop-color="#23d5ab"/>
+                </linearGradient>
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <circle cx="50" cy="50" r="40" stroke="url(#loader-gradient)" stroke-width="8" fill="none" opacity="0.2"/>
+            <circle cx="50" cy="50" r="40" stroke="url(#loader-gradient)" stroke-width="8" fill="none"
+                stroke-linecap="round"
+                stroke-dasharray="220"
+                stroke-dashoffset="180"
+                filter="url(#glow)">
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="1s" repeatCount="indefinite"/>
+            </circle>
+        </svg>
+        <div style="margin-top:32px;font-size:1.5em;color:#fff;font-weight:600;letter-spacing:1px;text-shadow:0 2px 16px #4F46E5,0 0 8px #23d5ab;">
+            <span id="loading-text">Đang tải dữ liệu</span><span class="dot">.</span>
+        </div>
+    </div>
+    <style>
+        @media (max-width: 600px) {
+            #loading-overlay svg { width: 70px; height: 70px; }
+            #loading-overlay div { font-size: 1.1em !important; }
+        }
+        #loading-overlay .dot {
+            animation: dotPulse 1.2s infinite steps(3);
+            font-size: 1.2em;
+            color: #23d5ab;
+            margin-left: 2px;
+        }
+        @keyframes dotPulse {
+            0% { content: ""; opacity: 1; }
+            33% { content: "."; opacity: 1; }
+            66% { content: ".."; opacity: 1; }
+            100% { content: "..."; opacity: 1; }
+        }
+    </style>
+    <script>
+        // Animation cho dấu chấm động
+        (function animateDots() {
+            const text = document.getElementById('loading-text');
+            const dot = document.querySelector('#loading-overlay .dot');
+            let count = 0;
+            setInterval(() => {
+                count = (count + 1) % 4;
+                dot.textContent = '.'.repeat(count);
+            }, 400);
+        })();
+    </script>
     <div class="selection-container">
         <div class="choice-card" id="view-schedule-card">
             <div class="icon"><i class="ph-fill ph-calendar-check"></i></div>
@@ -123,17 +181,86 @@
         socket.on('latestSchedule', (newScheduleEntry) => {
             renderSchedule(newScheduleEntry);
             localStorage.setItem('tkb-latest-schedule', JSON.stringify(newScheduleEntry));
+            hideLoading(); // Ẩn loading khi đã nhận được dữ liệu
         });
         socket.on('updateTimes', (newTimesData) => {
             renderTimes(newTimesData);
             localStorage.setItem('tkb-times-data', JSON.stringify(newTimesData));
+            hideLoading();
         });
         socket.on('updateSettings', (newSettings) => { 
-            document.title = (newSettings.pageTitle || 'Trang Chủ') + ' - TKB'; 
+            // Title
+            if (newSettings.pageTitle) {
+                document.title = newSettings.pageTitle;
+                // Nếu có thẻ og:title thì cập nhật luôn
+                let ogTitle = document.querySelector("meta[property='og:title']");
+                if (ogTitle) ogTitle.content = newSettings.pageTitle;
+            }
+            // Background color
             const newColor = newSettings.backgroundColor || '#f0f8ff';
             document.documentElement.style.setProperty('--background-color', newColor);
             localStorage.setItem('tkb-background-color', newColor);
+
+            // Favicon
+            if (newSettings.favicon) {
+                let link = document.querySelector("link[rel~='icon']");
+                if (!link) {
+                    link = document.createElement('link');
+                    link.rel = 'icon';
+                    document.head.appendChild(link);
+                }
+                link.href = newSettings.favicon;
+            }
+            // OG Title
+            if (newSettings.ogTitle) {
+                let meta = document.querySelector("meta[property='og:title']");
+                if (!meta) {
+                    meta = document.createElement('meta');
+                    meta.setAttribute('property', 'og:title');
+                    document.head.appendChild(meta);
+                }
+                meta.content = newSettings.ogTitle;
+            }
+            // OG Description
+            if (newSettings.ogDescription) {
+                let meta = document.querySelector("meta[property='og:description']");
+                if (!meta) {
+                    meta = document.createElement('meta');
+                    meta.setAttribute('property', 'og:description');
+                    document.head.appendChild(meta);
+                }
+                meta.content = newSettings.ogDescription;
+            }
+            // Canonical
+            if (newSettings.canonical) {
+                let link = document.querySelector("link[rel='canonical']");
+                if (!link) {
+                    link = document.createElement('link');
+                    link.rel = 'canonical';
+                    document.head.appendChild(link);
+                }
+                link.href = newSettings.canonical;
+            }
+            // Keywords
+            if (newSettings.keywords) {
+                let meta = document.querySelector("meta[name='keywords']");
+                if (!meta) {
+                    meta = document.createElement('meta');
+                    meta.name = 'keywords';
+                    document.head.appendChild(meta);
+                }
+                meta.content = newSettings.keywords;
+            }
         });
+
+        let loadingDone = false;
+        let loadingStart = Date.now();
+        function hideLoading() {
+            if (!loadingDone) {
+                loadingDone = true;
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
