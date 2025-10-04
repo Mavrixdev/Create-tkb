@@ -1,33 +1,14 @@
 const express = require('express');
 const http = require('http');
-const { Server } = require("socket.io");
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
 
 const SCHEDULES_FILE = path.join(__dirname, 'schedules.json');
 const TIMES_FILE = path.join(__dirname, 'times.json');
 const SETTINGS_FILE = path.join(__dirname, 'settings.json');
-
-function hashPassword(password) {
-    const salt = crypto.randomBytes(16).toString('hex');
-    const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-    return `${salt}:${hash}`;
-}
-
-function verifyPassword(password, storedHash) {
-    try {
-        const [salt, key] = storedHash.split(':');
-        const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-        return key === hash;
-    } catch (error) {
-        return false;
-    }
-}
 
 function loadJSON(filePath, defaultValue) {
     try {
@@ -70,7 +51,7 @@ publicNamespace.on('connection', (socket) => {
 const adminNamespace = io.of('/admin');
 adminNamespace.use((socket, next) => {
     const password = socket.handshake.auth.password;
-    if ((password && verifyPassword(password, currentSettings.adminPassword)) || password === currentSettings.adminPassword) {
+    if (password && password === currentSettings.adminPassword) {
         return next();
     }
     return next(new Error('Authentication error'));
@@ -99,10 +80,10 @@ adminNamespace.on('connection', (socket) => {
         fs.writeFileSync(TIMES_FILE, JSON.stringify(timesData, null, 2));
         io.emit('updateTimes', timesData);
     });
-    
+        
     socket.on('saveSettings', (newSettings) => {
         if (newSettings.hasOwnProperty('adminPassword') && newSettings.adminPassword) {
-            currentSettings.adminPassword = hashPassword(newSettings.adminPassword);
+            currentSettings.adminPassword = newSettings.adminPassword; // Không mã hóa
         }
         if (newSettings.hasOwnProperty('pageTitle')) {
             currentSettings.pageTitle = newSettings.pageTitle;
@@ -110,7 +91,6 @@ adminNamespace.on('connection', (socket) => {
         if (newSettings.hasOwnProperty('backgroundColor')) {
             currentSettings.backgroundColor = newSettings.backgroundColor;
         }
-
         fs.writeFileSync(SETTINGS_FILE, JSON.stringify(currentSettings, null, 2));
         
         const publicSettings = { 
