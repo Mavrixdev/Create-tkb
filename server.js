@@ -8,23 +8,35 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2'); // Vẫn cần cho serverless-mysql
+const serverlessMysql = require('serverless-mysql');
 const bcrypt = require('bcryptjs'); // Sử dụng bcrypt để hash password
 
 const SCHEDULES_FILE = path.join(__dirname, 'schedules.json');
 const TIMES_FILE = path.join(__dirname, 'times.json');
 
-// Tăng timeout cho pool để tránh ETIMEDOUT
-const db = mysql.createPool({
-    host: 'server.dichvucheap.vn',
-    user: 'phkctgnx_ntmdz',
-    password: '5vYH.c1ijLUq',
-    database: 'phkctgnx_tkb',
-    port: 3306,
-    connectTimeout: 30000,  // Tăng timeout kết nối (30 giây)
-    connectionLimit: 10,   // Giới hạn pool để tránh overload
-    waitForConnections: true
+// Sử dụng env vars cho credentials (set trên Vercel dashboard hoặc .env local)
+const db = serverlessMysql({
+    config: {
+        host: process.env.DB_HOST || 'server.dichvucheap.vn',
+        user: process.env.DB_USER || 'phkctgnx_ntmdz',
+        password: process.env.DB_PASSWORD || '5vYH.c1ijLUq', // Xóa hardcoded này sau khi set env
+        database: process.env.DB_NAME || 'phkctgnx_tkb',
+        port: process.env.DB_PORT || 3306
+    },
+    backoff: 'decorrelated',  // Tự reconnect với backoff
+    base: 5,  // Số retry
+    cap: 200  // Max delay retry
 });
+
+// Ping định kỳ để giữ kết nối
+async function pingDb() {
+    try {
+        await db.query('SELECT 1');
+    } catch (error) {
+        console.error('Ping DB failed:', error);
+    }
+}
 
 function loadJSON(filePath, defaultValue) {
     try {
@@ -44,6 +56,7 @@ let currentSettings = {};  // Declare biến này để tránh lỗi undefined
 
 (async () => {
     try {
+        await pingDb();  // Ping trước load
         currentSettings = await getSettings();  // Handle error ở đây
     } catch (error) {
         console.error('Lỗi khi load settings ban đầu:', error);
@@ -63,12 +76,17 @@ app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 app.get('/admin', (req, res) => { res.sendFile(path.join(__dirname, 'admin.html')); });
 
+// Thêm route cho favicon để fix 404 (tạo file favicon.ico/png nếu có)
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get('/favicon.png', (req, res) => res.status(204).end());
+
 const publicNamespace = io.of('/');
 publicNamespace.on('connection', async (socket) => {
     console.log('Người Dùng Mới Kết Nối');
     const latestScheduleEntry = history.length > 0 ? history[history.length - 1] : null;
     socket.emit('latestSchedule', latestScheduleEntry);
     try {
+        await pingDb();
         const settings = await getSettings();  // Handle error
         socket.emit('updateSettings', { 
             pageTitle: settings.pageTitle, 
@@ -90,9 +108,20 @@ adminNamespace.use(async (socket, next) => {
     const { username, password } = socket.handshake.auth;
     if (!username || !password) return next(new Error('Thiếu thông tin đăng nhập'));
     try {
+        await pingDb();
         const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+        console.log('Query rows for username ' + username + ':', JSON.stringify(rows));  // Thêm log để debug rows
         if (rows.length === 0) return next(new Error('Tài khoản không tồn tại'));
         const user = rows[0];
+        if (!user) {
+            console.error('Rows length > 0 but user is undefined:', rows);
+            return next(new Error('User not found - internal error'));
+        }
+        // Thêm check để tránh undefined password
+        if (typeof user.password === 'undefined' || user.password === null) {
+            console.error('User found but password is undefined/null:', JSON.stringify(user));
+            return next(new Error('Mật khẩu không hợp lệ hoặc không tồn tại'));
+        }
         // Sử dụng bcrypt để so sánh password (giả sử password trong DB đã hash)
         const isMatch = await bcrypt.compare(password, user.password);
         if (isMatch) {
@@ -144,6 +173,7 @@ adminNamespace.on('connection', (socket) => {
         
     socket.on('saveSettings', async (newSettings) => {
         try {
+            await pingDb();
             // Nếu có đổi mật khẩu admin, hash trước khi lưu
             if (newSettings.adminPassword) {
                 const hashedPassword = await bcrypt.hash(newSettings.adminPassword, 10);
@@ -170,6 +200,7 @@ adminNamespace.on('connection', (socket) => {
     socket.on('changeAdminPassword', async ({ username, newPassword }) => {
         if (!username || !newPassword) return;
         try {
+            await pingDb();
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             await db.query('UPDATE users SET password = ? WHERE username = ?', [hashedPassword, username]);
             socket.emit('passwordChanged', true);
@@ -181,6 +212,7 @@ adminNamespace.on('connection', (socket) => {
 
 async function getSettings() {
     try {
+        await pingDb();  // Ping trước query
         const [rows] = await db.query('SELECT * FROM settings WHERE id=1');
         return rows[0] || {};  // Trả default nếu không có row
     } catch (error) {
@@ -191,6 +223,7 @@ async function getSettings() {
 
 async function saveSettings(newSettings) {
     try {
+        await pingDb();
         await db.query(
             `UPDATE settings SET 
                 pageTitle=?, backgroundColor=?, favicon=?, ogTitle=?, ogDescription=?, canonical=?, keywords=?
@@ -210,6 +243,12 @@ async function saveSettings(newSettings) {
         throw error;
     }
 }
+
+// Handle close DB khi function end trên Vercel
+process.on('SIGTERM', async () => {
+    await db.end();
+    process.exit(0);
+});
 
 const PORT = process.env.PORT || 80;
 server.listen(PORT, () => {
