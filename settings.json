@@ -1,5 +1,10 @@
 {
   "adminPassword": "Mavrixdev",
-  "pageTitle": "Thời Khóa Biểu",
-  "backgroundColor": "#febebe"
+  "pageTitle": "TKB 12D - GDNN-GDTX Cư M’gar",
+  "backgroundColor": "#febebe",
+  "favicon": "",
+  "ogTitle": "TKB 12D - GDNN-GDTX Cư M’gar",
+  "ogDescription": "Trang web Thời Khóa Biểu dành cho lớp 12D, Trung Tâm GDNN-GDTX Cư M’gar. Giúp học sinh, giáo viên và phụ huynh dễ dàng xem, quản lý và cập nhật lịch học trực tuyến với giao diện hiện đại, tiện lợi trên mọi thiết bị.",
+  "canonical": "https://tkb-ttgdtx.vercel.app/",
+  "keywords": "thời khóa biểu, lớp 12D, Trung Tâm GDNN-GDTX Cư M’gar, lịch học, TKB, học sinh, giáo viên, phụ huynh, lịch học trực tuyến, Cư M’gar, GDNN, GDTX, trường học, 12D, trung tâm giáo dục thường xuyên, trung tâm giáo dục nghề nghiệp"
 }
